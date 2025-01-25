@@ -199,7 +199,7 @@ async function main() {
   try {
     console.clear();
     console.log(
-      chalk.bold.cyan("\n=== LayerEdge Referral Bot by @jinwooid ===\n")
+      chalk.bold.cyan("\n=== LayerEdge Referral by CUANNODE | 0xgr3y ===\n")
     );
 
     const proxies = await loadProxies();
