@@ -32,7 +32,7 @@ Script ini sekarang mengikuti langkah-langkah yang tepat:
 ### Cara Menggunakan Script:
 
 ```bash
-sudo ./layeredge_install.sh "cli-node-private-key"
+bash layeredge_install.sh "cli-node-private-key"
 ```
 
 *Catatan*: Ganti "cli-node-private-key" dengan private key dompet yang sebenarnya.
