@@ -2,7 +2,7 @@
 
 # Script for installing and setting up LayerEdge Light Node with systemd service
 # Based on: https://docs.layeredge.io/introduction/developer-guide/run-a-node/light-node-setup-guide
-# Usage: bash layeredge_install.sh <private_key>
+# Usage: sudo ./layeredge_install.sh <private_key> or bash layeredge_install.sh <private_key>
 
 set -e
 
@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Check if private key argument is provided
 if [ -z "$1" ]; then
   echo -e "${RED}Error: Private key argument is missing.${NC}"
-  echo -e "Usage: bash layeredge_install.sh <private_key>"
+  echo -e "Usage: sudo ./layeredge_install.sh <private_key> or bash layeredge_install.sh <private_key>"
   exit 1
 fi
 
@@ -26,10 +26,11 @@ echo -e "${GREEN}===============================================================
 echo -e "${GREEN}           LayerEdge Light Node Installation Script                 ${NC}"
 echo -e "${GREEN}====================================================================${NC}"
 
-# Check if script is run as root
+# Check if script is run as root, and if not, restart with sudo
 if [ "$EUID" -ne 0 ]; then
-  echo -e "${RED}Please run as root or using sudo${NC}"
-  exit 1
+  echo -e "${YELLOW}Script must be run as root. Restarting with sudo...${NC}"
+  exec sudo "$0" "$@"
+  exit $?
 fi
 
 # Function to check and install dependencies
@@ -42,60 +43,82 @@ install_dependencies() {
   # Install required packages
   apt install -y curl wget jq build-essential git screen
 
-  # Check if Go is installed (Go 1.18+ required)
+  # Check if Go is installed and has correct version (1.18+)
   if ! command -v go &> /dev/null; then
-    echo -e "${YELLOW}Installing Go...${NC}"
-    wget https://golang.org/dl/go1.20.0.linux-amd64.tar.gz
-    tar -C /usr/local -xzf go1.20.0.linux-amd64.tar.gz
+    echo -e "${YELLOW}Go not installed. Installing Go...${NC}"
+    wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
     echo 'export PATH=$PATH:/usr/local/go/bin' >> /root/.bashrc
-    rm go1.20.0.linux-amd64.tar.gz
+    rm go1.22.2.linux-amd64.tar.gz
   else
     # Check Go version
-    GO_VERSION=$(go version | awk '{print $3}' | sed 's/go//')
+    GO_VERSION=$(go version | grep -oP 'go\K[0-9]+\.[0-9]+' || echo "0.0")
     GO_MAJOR=$(echo $GO_VERSION | cut -d. -f1)
     GO_MINOR=$(echo $GO_VERSION | cut -d. -f2)
     
     if [ "$GO_MAJOR" -lt 1 ] || ([ "$GO_MAJOR" -eq 1 ] && [ "$GO_MINOR" -lt 18 ]); then
-      echo -e "${YELLOW}Upgrading Go to version 1.20...${NC}"
-      wget https://golang.org/dl/go1.20.0.linux-amd64.tar.gz
+      echo -e "${YELLOW}Go version $GO_VERSION is below required version 1.18. Upgrading Go...${NC}"
+      wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
       rm -rf /usr/local/go
-      tar -C /usr/local -xzf go1.20.0.linux-amd64.tar.gz
+      tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
       export PATH=$PATH:/usr/local/go/bin
-      rm go1.20.0.linux-amd64.tar.gz
+      rm go1.22.2.linux-amd64.tar.gz
+    else
+      echo -e "${GREEN}Go version $GO_VERSION is already installed and meets minimum requirement (1.18+)${NC}"
     fi
   fi
   
-  # Check if Rust is installed
+  # Check if Rust is installed and has correct version (1.81+)
   if ! command -v rustc &> /dev/null; then
-    echo -e "${YELLOW}Installing Rust...${NC}"
+    echo -e "${YELLOW}Rust not installed. Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source $HOME/.cargo/env
     echo 'source $HOME/.cargo/env' >> /root/.bashrc
-  fi
-  
-  # Install Risc0 Toolchain
-  echo -e "${YELLOW}Installing Risc0 Toolchain...${NC}"
-  curl -L https://risczero.com/install | bash
-  source ~/.bashrc
-  
-  # Use rzup command if available, or warn if not
-  if command -v rzup &> /dev/null; then
-    rzup install
   else
-    echo -e "${YELLOW}Warning: rzup command not found. You may need to restart your terminal and run 'rzup install' manually.${NC}"
-    echo -e "${YELLOW}Continuing with installation...${NC}"
+    # Check Rust version
+    RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+\.\d+' || echo "0.0.0")
+    RUST_MAJOR=$(echo $RUST_VERSION | cut -d. -f1)
+    RUST_MINOR=$(echo $RUST_VERSION | cut -d. -f2)
+    
+    if [ "$RUST_MAJOR" -lt 1 ] || ([ "$RUST_MAJOR" -eq 1 ] && [ "$RUST_MINOR" -lt 81 ]); then
+      echo -e "${YELLOW}Rust version $RUST_VERSION is below required version 1.81. Updating Rust...${NC}"
+      rustup update stable
+    else
+      echo -e "${GREEN}Rust version $RUST_VERSION is already installed and meets minimum requirement (1.81+)${NC}"
+    fi
   fi
+  
+  # Install Risc0 Toolchain if not already installed
+  if ! command -v rzup &> /dev/null; then
+    echo -e "${YELLOW}Installing Risc0 Toolchain...${NC}"
+    curl -L https://risczero.com/install | bash -
+    source ~/.bashrc
+    
+    # Check if rzup is now available
+    if command -v rzup &> /dev/null; then
+      echo -e "${YELLOW}Running rzup install...${NC}"
+      rzup install
+    else
+      echo -e "${YELLOW}Warning: rzup command not found after installation.${NC}"
+      echo -e "${YELLOW}You may need to run the following manually after installation:${NC}"
+      echo -e "${GREEN}source ~/.bashrc && rzup install${NC}"
+    fi
+  else
+    echo -e "${GREEN}Risc0 Toolchain already installed${NC}"
+  fi
+  
+  # Set up environment variables for this session
+  export PATH=$PATH:/usr/local/go/bin:$HOME/.cargo/bin
   
   # Verify installations
-  export PATH=$PATH:/usr/local/go/bin
-  GO_VERSION=$(go version)
-  echo -e "${GREEN}Go version: ${GO_VERSION} installed successfully${NC}"
+  GO_VERSION=$(go version 2>/dev/null || echo "Go not in PATH")
+  RUST_VERSION=$(rustc --version 2>/dev/null || echo "Rust not in PATH")
   
-  RUST_VERSION=$(rustc --version)
-  echo -e "${GREEN}Rust version: ${RUST_VERSION} installed successfully${NC}"
+  echo -e "${GREEN}Go status: ${GO_VERSION}${NC}"
+  echo -e "${GREEN}Rust status: ${RUST_VERSION}${NC}"
   
-  echo -e "${GREEN}Dependencies installed successfully${NC}"
+  echo -e "${GREEN}Dependencies check completed${NC}"
 }
 
 # Function to clone and setup Light Node
@@ -119,13 +142,24 @@ setup_light_node() {
   if [ ! -d "risc0-merkle-service" ]; then
     echo -e "${RED}Error: Directory structure seems incorrect. risc0-merkle-service directory not found.${NC}"
     echo -e "${YELLOW}This might be a different repository structure than expected.${NC}"
-    exit 1
+    echo -e "${YELLOW}Trying alternative repository name...${NC}"
+    
+    cd /root
+    git clone https://github.com/Layer-Edge/light-node-release.git light-node-temp
+    
+    if [ -d "/root/light-node-temp/risc0-merkle-service" ]; then
+      echo -e "${GREEN}Found correct repository structure in alternative repo!${NC}"
+      rm -rf /root/light-node
+      mv /root/light-node-temp /root/light-node
+    else
+      rm -rf /root/light-node-temp
+      echo -e "${RED}Error: Could not find the correct repository structure.${NC}"
+      echo -e "${YELLOW}Please verify the repository manually.${NC}"
+      exit 1
+    fi
   fi
   
-  if [ ! -f "main.go" ]; then
-    echo -e "${RED}Warning: main.go not found in the repository root.${NC}"
-    echo -e "${YELLOW}Build process might not work as expected.${NC}"
-  fi
+  cd /root/light-node
   
   # Setup .env file
   echo -e "${YELLOW}Creating .env file...${NC}"
