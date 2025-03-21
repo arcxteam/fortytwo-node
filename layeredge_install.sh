@@ -23,7 +23,7 @@ fi
 PRIVATE_KEY="$1"
 
 # Print banner
-echo -e "${GREEN}================== WELCOME TO CUANNODE =======================${NC}"
+echo -e "${GREEN}================== WELCOME TO VOTING DAPPs =======================${NC}"
 echo -e "${YELLOW}
  ██████╗██╗   ██╗ █████╗ ███╗   ██╗███╗   ██╗ ██████╗ ██████╗ ███████╗
 ██╔════╝██║   ██║██╔══██╗████╗  ██║████╗  ██║██╔═══██╗██╔══██╗██╔════╝
@@ -33,7 +33,7 @@ echo -e "${YELLOW}
  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝
 ${NC}"
 echo -e "${GREEN}=========================================================================${NC}"
-echo -e "${MAGENTA}         Welcome to Footprint Onchain Testnet & Mainnet Interactive   ${NC}"
+echo -e "${MAGENTA}         Welcome to Voting Onchain Testnet & Mainnet Interactive   ${NC}"
 echo -e "${YELLOW}           - CUANNODE By Greyscope&Co, Credit By Arcxteam -     ${NC}"
 echo -e "${GREEN}=========================================================================${NC}"
 
@@ -259,10 +259,23 @@ build_light_node() {
 create_merkle_service() {
   echo -e "${YELLOW}Creating systemd service for Risc0 Merkle Service...${NC}"
   
-  # Determine the best way to run the Merkle service
+  # Check the content of run_merkle_tree.sh if it exists
   if [ -f "/root/light-node/risc0-merkle-service/run_merkle_tree.sh" ]; then
-    MERKLE_EXEC_CMD="/bin/bash /root/light-node/risc0-merkle-service/run_merkle_tree.sh"
+    echo -e "${YELLOW}Checking run_merkle_tree.sh content...${NC}"
+    chmod +x /root/light-node/risc0-merkle-service/run_merkle_tree.sh
+    
+    # Try running script directly to see if it works
+    echo -e "${YELLOW}Testing run_merkle_tree.sh (output suppressed)...${NC}"
+    cd /root/light-node/risc0-merkle-service
+    if timeout 5 ./run_merkle_tree.sh > /dev/null 2>&1; then
+      echo -e "${GREEN}run_merkle_tree.sh appears to be working.${NC}"
+      MERKLE_EXEC_CMD="/bin/bash /root/light-node/risc0-merkle-service/run_merkle_tree.sh"
+    else
+      echo -e "${YELLOW}run_merkle_tree.sh test failed, using cargo run directly instead.${NC}"
+      MERKLE_EXEC_CMD="/root/.cargo/bin/cargo run"
+    fi
   else
+    echo -e "${YELLOW}run_merkle_tree.sh not found, using cargo run...${NC}"
     MERKLE_EXEC_CMD="/root/.cargo/bin/cargo run"
   fi
   
@@ -297,7 +310,45 @@ EOF
   # Start the service
   systemctl start layeredge-merkle.service
   
-  echo -e "${GREEN}Merkle Service systemd service created and started successfully!${NC}"
+  # Check if service started successfully
+  if systemctl is-active --quiet layeredge-merkle.service; then
+    echo -e "${GREEN}Merkle Service systemd service created and started successfully!${NC}"
+  else
+    echo -e "${YELLOW}Merkle Service failed to start with run_merkle_tree.sh, trying with cargo run...${NC}"
+    
+    # Modify service to use cargo run directly
+    cat > /etc/systemd/system/layeredge-merkle.service << EOF
+[Unit]
+Description=LayerEdge Risc0 Merkle Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/light-node/risc0-merkle-service
+ExecStart=/root/.cargo/bin/cargo run
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.cargo/bin
+Environment=RUST_BACKTRACE=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Reload and restart
+    systemctl daemon-reload
+    systemctl restart layeredge-merkle.service
+    
+    if systemctl is-active --quiet layeredge-merkle.service; then
+      echo -e "${GREEN}Merkle Service started successfully with cargo run!${NC}"
+    else
+      echo -e "${RED}Warning: Merkle Service failed to start. Light Node may not function correctly.${NC}"
+      echo -e "${YELLOW}You can check the logs with: journalctl -u layeredge-merkle.service${NC}"
+    fi
+  fi
   
   # Wait for Merkle Service to initialize
   echo -e "${YELLOW}Waiting for Merkle Service to initialize (30 seconds)...${NC}"
