@@ -10,6 +10,7 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Check if private key argument is provided
@@ -22,9 +23,19 @@ fi
 PRIVATE_KEY="$1"
 
 # Print banner
-echo -e "${GREEN}====================================================================${NC}"
-echo -e "${GREEN}           LayerEdge Light Node Installation Script                 ${NC}"
-echo -e "${GREEN}====================================================================${NC}"
+echo -e "${GREEN}================== WELCOME TO CUANNODE =======================${NC}"
+echo -e "${YELLOW}
+ ██████╗██╗   ██╗ █████╗ ███╗   ██╗███╗   ██╗ ██████╗ ██████╗ ███████╗
+██╔════╝██║   ██║██╔══██╗████╗  ██║████╗  ██║██╔═══██╗██╔══██╗██╔════╝
+██║     ██║   ██║███████║██╔██╗ ██║██╔██╗ ██║██║   ██║██║  ██║█████╗  
+██║     ██║   ██║██╔══██║██║╚██╗██║██║╚██╗██║██║   ██║██║  ██║██╔══╝  
+╚██████╗╚██████╔╝██║  ██║██║ ╚████║██║ ╚████║╚██████╔╝██████╔╝███████╗
+ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝
+${NC}"
+echo -e "${GREEN}=========================================================================${NC}"
+echo -e "${MAGENTA}         Welcome to Footprint Onchain Testnet & Mainnet Interactive   ${NC}"
+echo -e "${YELLOW}           - CUANNODE By Greyscope&Co, Credit By Arcxteam -     ${NC}"
+echo -e "${GREEN}=========================================================================${NC}"
 
 # Check if script is run as root, and if not, restart with sudo
 if [ "$EUID" -ne 0 ]; then
