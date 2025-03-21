@@ -1,56 +1,33 @@
-root@cuannode:~# chmod +x layeredge_install.sh
-root@cuannode:~# sudo ./layeredge_install.sh "xxxxxxxxxxxxxxxxxxx"
+go: downloading github.com/klauspost/compress v1.17.9
+go: downloading github.com/cloudwego/iasm v0.2.0
+light-node executable found
+Light Node build completed
+Creating systemd service for Risc0 Merkle Service...
+Created symlink /etc/systemd/system/multi-user.target.wants/layeredge-merkle.service → /etc/systemd/system/layeredge-merkle.service.
+Merkle Service systemd service created and started successfully!
+Waiting for Merkle Service to initialize (30 seconds)...
+Creating systemd service for LayerEdge Light Node...
+Created symlink /etc/systemd/system/multi-user.target.wants/layeredge.service → /etc/systemd/system/layeredge.service.
+Light Node systemd service created and started successfully!
 ====================================================================
-           LayerEdge Light Node Installation Script                 
+ LayerEdge Light Node has been installed and started successfully!
 ====================================================================
-Starting LayerEdge Light Node installation...
-Checking and installing dependencies...
-Hit:1 http://asi-fs-x.contabo.net/ubuntu jammy InRelease
-Get:2 http://asi-fs-x.contabo.net/ubuntu jammy-updates InRelease [128 kB]                               
-Get:3 http://asi-fs-x.contabo.net/ubuntu jammy-backports InRelease [127 kB]                               
-Get:4 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]                                 
-Hit:5 https://download.docker.com/linux/ubuntu jammy InRelease                      
-Get:6 http://asi-fs-x.contabo.net/ubuntu jammy-updates/main amd64 Packages [2,387 kB]
-Get:7 http://asi-fs-x.contabo.net/ubuntu jammy-updates/main i386 Packages [768 kB]
-Get:8 http://asi-fs-x.contabo.net/ubuntu jammy-updates/main amd64 c-n-f Metadata [18.5 kB]
-Get:9 http://asi-fs-x.contabo.net/ubuntu jammy-updates/universe amd64 Packages [1,194 kB]
-Get:10 http://asi-fs-x.contabo.net/ubuntu jammy-updates/universe Translation-en [294 kB]
-Get:11 http://asi-fs-x.contabo.net/ubuntu jammy-updates/universe amd64 c-n-f Metadata [28.6 kB]
-Get:12 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [2,145 kB]
-Get:13 http://security.ubuntu.com/ubuntu jammy-security/main i386 Packages [599 kB]
-Get:14 http://security.ubuntu.com/ubuntu jammy-security/main amd64 c-n-f Metadata [13.5 kB]
-Get:15 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [967 kB]
-Get:16 http://security.ubuntu.com/ubuntu jammy-security/universe Translation-en [207 kB]
-Get:17 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 c-n-f Metadata [21.7 kB]
-Fetched 9,029 kB in 1s (6,045 kB/s)                                      
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-54 packages can be upgraded. Run 'apt list --upgradable' to see them.
-Reading package lists... Done
-Building dependency tree... Done
-Reading state information... Done
-build-essential is already the newest version (12.9ubuntu3).
-jq is already the newest version (1.6-2.1ubuntu3).
-screen is already the newest version (4.9.0-1).
-curl is already the newest version (7.81.0-1ubuntu1.20).
-git is already the newest version (1:2.34.1-1ubuntu1.12).
-wget is already the newest version (1.21.2-2ubuntu1.1).
-0 upgraded, 0 newly installed, 0 to remove and 54 not upgraded.
-Installing Go...
---2025-03-21 10:41:52--  https://golang.org/dl/go1.20.0.linux-amd64.tar.gz
-Resolving golang.org (golang.org)... 74.125.128.141, 2a00:1450:4013:c02::8d
-Connecting to golang.org (golang.org)|74.125.128.141|:443... connected.
-HTTP request sent, awaiting response... 301 Moved Permanently
-Location: https://go.dev/dl/go1.20.0.linux-amd64.tar.gz [following]
---2025-03-21 10:41:52--  https://go.dev/dl/go1.20.0.linux-amd64.tar.gz
-Resolving go.dev (go.dev)... 216.239.34.21, 216.239.38.21, 216.239.36.21, ...
-Connecting to go.dev (go.dev)|216.239.34.21|:443... connected.
-HTTP request sent, awaiting response... 302 Found
-Location: https://dl.google.com/go/go1.20.0.linux-amd64.tar.gz [following]
---2025-03-21 10:41:52--  https://dl.google.com/go/go1.20.0.linux-amd64.tar.gz
-Resolving dl.google.com (dl.google.com)... 74.125.128.93, 74.125.128.190, 74.125.128.91, ...
-Connecting to dl.google.com (dl.google.com)|74.125.128.93|:443... connected.
-HTTP request sent, awaiting response... 404 Not Found
-2025-03-21 10:41:52 ERROR 404: Not Found.
+Merkle Service Status:
+● layeredge-merkle.service - LayerEdge Risc0 Merkle Service
+     Loaded: loaded (/etc/systemd/system/layeredge-merkle.service; enabled; vendor preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Fri 2025-03-21 11:03:19 CET; 8ms ago
+    Process: 2541327 ExecStart=/bin/bash /root/light-node/risc0-merkle-service/run_merkle_tree.sh (code=exited, status=1/FAILURE)
+   Main PID: 2541327 (code=exited, status=1/FAILURE)
+        CPU: 3ms
+root@cuannode:~# ls
+blocks        dfusionsBot  go                        layeredge_install.sh
+ceremony      elixir       haustBot                  light-node         
 
+root@cuannode:~# cd ^[[200~light-node~^C
+root@cuannode:~# cd light-node
+root@cuannode:~/light-node# ls
+clients  go.mod  go.sum  light-node  main.go  Makefile  node  README.md  risc0-merkle-service  scripts  utils
+root@cuannode:~/light-node# cd risc0-merkle-service
+root@cuannode:~/light-node/risc0-merkle-service# ls
+Cargo.toml  cli  host  methods  run_merkle_tree.sh  rust-toolchain.toml
+root@cuannode:~/light-node/risc0-merkle-service# 
