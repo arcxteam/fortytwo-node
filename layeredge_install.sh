@@ -71,11 +71,21 @@ install_dependencies() {
     echo -e "${YELLOW}Installing Rust...${NC}"
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source $HOME/.cargo/env
+    echo 'source $HOME/.cargo/env' >> /root/.bashrc
   fi
   
   # Install Risc0 Toolchain
   echo -e "${YELLOW}Installing Risc0 Toolchain...${NC}"
-  curl -L https://risczero.com/install | bash && source ~/.bashrc && rzup install
+  curl -L https://risczero.com/install | bash
+  source ~/.bashrc
+  
+  # Use rzup command if available, or warn if not
+  if command -v rzup &> /dev/null; then
+    rzup install
+  else
+    echo -e "${YELLOW}Warning: rzup command not found. You may need to restart your terminal and run 'rzup install' manually.${NC}"
+    echo -e "${YELLOW}Continuing with installation...${NC}"
+  fi
   
   # Verify installations
   export PATH=$PATH:/usr/local/go/bin
@@ -85,7 +95,7 @@ install_dependencies() {
   RUST_VERSION=$(rustc --version)
   echo -e "${GREEN}Rust version: ${RUST_VERSION} installed successfully${NC}"
   
-  echo -e "${GREEN}Risc0 Toolchain installed successfully${NC}"
+  echo -e "${GREEN}Dependencies installed successfully${NC}"
 }
 
 # Function to clone and setup Light Node
@@ -105,6 +115,18 @@ setup_light_node() {
   
   cd /root/light-node
   
+  # Check repo structure
+  if [ ! -d "risc0-merkle-service" ]; then
+    echo -e "${RED}Error: Directory structure seems incorrect. risc0-merkle-service directory not found.${NC}"
+    echo -e "${YELLOW}This might be a different repository structure than expected.${NC}"
+    exit 1
+  fi
+  
+  if [ ! -f "main.go" ]; then
+    echo -e "${RED}Warning: main.go not found in the repository root.${NC}"
+    echo -e "${YELLOW}Build process might not work as expected.${NC}"
+  fi
+  
   # Setup .env file
   echo -e "${YELLOW}Creating .env file...${NC}"
   cat > .env << EOF
@@ -121,17 +143,24 @@ EOF
   echo -e "${GREEN}.env file created successfully${NC}"
 }
 
-# Function to build and setup Merkle Service
+# Function to check and setup Merkle Service
 setup_merkle_service() {
   echo -e "${YELLOW}Setting up Risc0 Merkle Service...${NC}"
   
   cd /root/light-node/risc0-merkle-service
   
-  # Build Merkle Service
-  echo -e "${YELLOW}Building Merkle Service...${NC}"
-  cargo build
+  # Check if there's a run_merkle_tree.sh script
+  if [ -f "run_merkle_tree.sh" ]; then
+    echo -e "${YELLOW}Found run_merkle_tree.sh script, making it executable...${NC}"
+    chmod +x run_merkle_tree.sh
+  else
+    # Build Merkle Service with Cargo
+    echo -e "${YELLOW}Building Merkle Service with Cargo...${NC}"
+    source $HOME/.cargo/env
+    cargo build
+  fi
   
-  echo -e "${GREEN}Merkle Service built successfully${NC}"
+  echo -e "${GREEN}Merkle Service setup completed${NC}"
 }
 
 # Function to build Light Node
@@ -140,18 +169,60 @@ build_light_node() {
   
   cd /root/light-node
   
-  # Build Light Node
-  go build
+  # Set correct Go environment
+  export PATH=$PATH:/usr/local/go/bin
   
-  echo -e "${GREEN}Light Node built successfully${NC}"
+  # First check if an executable already exists
+  if [ -f "light-node" ]; then
+    echo -e "${GREEN}Found pre-built light-node executable${NC}"
+  elif [ -f "main" ]; then
+    echo -e "${GREEN}Found pre-built main executable${NC}"
+  else
+    # Build Light Node using go build
+    echo -e "${YELLOW}Building Light Node with Go...${NC}"
+    
+    # Check if go.mod exists
+    if [ -f "go.mod" ]; then
+      go build
+      
+      # Check if build was successful
+      if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to build Light Node with 'go build'.${NC}"
+        echo -e "${YELLOW}Trying alternative build command 'go build -o light-node main.go'...${NC}"
+        go build -o light-node main.go
+      fi
+    else
+      echo -e "${RED}Error: go.mod not found. Cannot build the Light Node.${NC}"
+      exit 1
+    fi
+  fi
+  
+  # Verify the executable exists after build
+  if [ -f "light-node" ]; then
+    echo -e "${GREEN}light-node executable found${NC}"
+  elif [ -f "main" ]; then
+    echo -e "${GREEN}main executable found${NC}"
+  else
+    echo -e "${RED}Error: No executable found after build. Build may have failed.${NC}"
+    exit 1
+  fi
+  
+  echo -e "${GREEN}Light Node build completed${NC}"
 }
 
 # Function to create systemd service for Merkle Service
 create_merkle_service() {
   echo -e "${YELLOW}Creating systemd service for Risc0 Merkle Service...${NC}"
   
+  # Determine the best way to run the Merkle service
+  if [ -f "/root/light-node/risc0-merkle-service/run_merkle_tree.sh" ]; then
+    MERKLE_EXEC_CMD="/bin/bash /root/light-node/risc0-merkle-service/run_merkle_tree.sh"
+  else
+    MERKLE_EXEC_CMD="/root/.cargo/bin/cargo run"
+  fi
+  
   # Create systemd service file
-  cat > /etc/systemd/system/layeredge-merkle.service << 'EOF'
+  cat > /etc/systemd/system/layeredge-merkle.service << EOF
 [Unit]
 Description=LayerEdge Risc0 Merkle Service
 After=network.target
@@ -160,12 +231,13 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/root/light-node/risc0-merkle-service
-ExecStart=/root/.cargo/bin/cargo run
+ExecStart=${MERKLE_EXEC_CMD}
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.cargo/bin
+Environment=RUST_BACKTRACE=1
 
 [Install]
 WantedBy=multi-user.target
@@ -191,8 +263,14 @@ EOF
 create_light_node_service() {
   echo -e "${YELLOW}Creating systemd service for LayerEdge Light Node...${NC}"
   
+  # Determine executable name
+  LIGHT_NODE_EXECUTABLE="light-node"
+  if [ ! -f "/root/light-node/light-node" ] && [ -f "/root/light-node/main" ]; then
+    LIGHT_NODE_EXECUTABLE="main"
+  fi
+  
   # Create systemd service file
-  cat > /etc/systemd/system/layeredge.service << 'EOF'
+  cat > /etc/systemd/system/layeredge.service << EOF
 [Unit]
 Description=LayerEdge Light Node Service
 After=layeredge-merkle.service
@@ -202,7 +280,7 @@ Requires=layeredge-merkle.service
 Type=simple
 User=root
 WorkingDirectory=/root/light-node
-ExecStart=/root/light-node/light-node
+ExecStart=/root/light-node/${LIGHT_NODE_EXECUTABLE}
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -258,6 +336,12 @@ main() {
   systemctl status layeredge.service --no-pager
   
   echo -e "${GREEN}====================================================================${NC}"
+  echo -e "${YELLOW}Verification Process:${NC}"
+  echo -e "The Light Node will automatically run the verification process from verifier.go"
+  echo -e "This process will verify Merkle proofs and submit them to earn points"
+  echo -e "No additional action is needed - the verification runs automatically as part of the node"
+  echo -e "${GREEN}====================================================================${NC}"
+  
   echo -e "${YELLOW}You can manage the services with the following commands:${NC}"
   echo -e "${YELLOW}For Merkle Service:${NC}"
   echo -e "Check status: ${GREEN}sudo systemctl status layeredge-merkle.service${NC}"
