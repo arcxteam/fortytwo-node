@@ -179,7 +179,7 @@ GRPC_URL=grpc.testnet.layeredge.io:9090
 CONTRACT_ADDR=cosmos1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqt56709
 ZK_PROVER_URL=http://127.0.0.1:3001
 # Alternatively:
-# ZK_PROVER_URL=https://layeredge.mintair.xyz/
+ZK_PROVER_URL=https://layeredge.mintair.xyz/
 API_REQUEST_TIMEOUT=100
 POINTS_API=https://light-node.layeredge.io
 PRIVATE_KEY='${PRIVATE_KEY}'
@@ -291,7 +291,7 @@ User=root
 WorkingDirectory=/root/light-node/risc0-merkle-service
 ExecStart=${MERKLE_EXEC_CMD}
 Restart=always
-RestartSec=10
+RestartSec=15
 StandardOutput=journal
 StandardError=journal
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.cargo/bin
@@ -328,7 +328,7 @@ User=root
 WorkingDirectory=/root/light-node/risc0-merkle-service
 ExecStart=/root/.cargo/bin/cargo run
 Restart=always
-RestartSec=10
+RestartSec=15
 StandardOutput=journal
 StandardError=journal
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.cargo/bin
