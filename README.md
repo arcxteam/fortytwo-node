@@ -1,8 +1,3 @@
-Mohon maaf atas kebingungan sebelumnya. Anda benar, saya telah salah membaca dokumentasi dan mengacu pada proyek yang berbeda. Mari saya perbaiki script instalasi berdasarkan dokumen yang Anda berikan.​​​​​​​​​​​​​​​​
-
-Terima kasih atas klarifikasinya. Saya telah sepenuhnya merevisi script instalasi berdasarkan dokumentasi yang benar dari https://docs.layeredge.io/introduction/developer-guide/run-a-node/light-node-setup-guide.
-
-Script ini sekarang mengikuti langkah-langkah yang tepat:
 
 1. **Menginstal Dependensi**:
    - Go versi 1.18 atau lebih tinggi
