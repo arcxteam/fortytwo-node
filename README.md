@@ -14,6 +14,8 @@ git clone https://github.com/arcxteam/fortytwo-node.git
 ### Create a screen session
 ```
 screen -S fortytwo
+```
+```
 cd fortytwo-node
 chmod +x install.sh && ./install.sh
 ```
