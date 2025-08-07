@@ -19,7 +19,7 @@ animate_text_x2() {
 
 auto_select_model() {
     # Modified to use CPU RAM instead of VRAM
-    AVAILABLE_MEM=$(awk '/MemTotal/ {print $2 / 1024}' /proc/meminfo)
+    AVAILABLE_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
     animate_text "    ↳ System analysis: ${AVAILABLE_MEM}GB ${MEMORY_TYPE} detected"
 
     AVAILABLE_MEM_INT=$(printf "%.0f" "$AVAILABLE_MEM")
