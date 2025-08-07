@@ -1,459 +1,478 @@
 #!/bin/bash
 
-# Script for installing and setting up LayerEdge Light Node with systemd service
-# Based on: https://docs.layeredge.io/introduction/developer-guide/run-a-node/light-node-setup-guide
-# Usage: sudo ./layeredge_install.sh <private_key> or bash layeredge_install.sh <private_key>
+animate_text() {
+    local text="$1"
+    for ((i=0; i<${#text}; i++)); do
+        echo -n "${text:$i:1}"
+        sleep 0.006
+    done
+    echo
+}
+animate_text_x2() {
+    local text="$1"
+    for ((i=0; i<${#text}; i++)); do
+        echo -n "${text:$i:1}"
+        sleep 0.0005
+    done
+    echo
+}
 
-set -e
+auto_select_model() {
+    # Modified to use CPU RAM instead of VRAM
+    AVAILABLE_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
+    animate_text "    ↳ System analysis: ${AVAILABLE_MEM}GB ${MEMORY_TYPE} detected"
 
-# Colors for better output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-MAGENTA='\033[0;35m'
-NC='\033[0m' # No Color
+    AVAILABLE_MEM_INT=$(printf "%.0f" "$AVAILABLE_MEM")
 
-# Check if private key argument is provided
-if [ -z "$1" ]; then
-  echo -e "${RED}Error: Private key argument is missing.${NC}"
-  echo -e "Usage: sudo ./layeredge_install.sh <private_key> or bash layeredge_install.sh <private_key>"
-  exit 1
+    if [ "$AVAILABLE_MEM_INT" -ge 16 ]; then
+        animate_text "    🜲 Recommending: ⬢ 8 Qwen3 8B for balanced capability"
+        LLM_HF_REPO="unsloth/Qwen3-8B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-8B-Q4_K_M.gguf"
+        NODE_NAME="Qwen3 8B Q4"
+    elif [ "$AVAILABLE_MEM_INT" -ge 8 ]; then
+        animate_text "    🜲 Recommending: ⬢ 11 Nemotron 7B for mathematical intelligence"
+        LLM_HF_REPO="bartowski/nvidia_OpenMath-Nemotron-7B-GGUF"
+        LLM_HF_MODEL_NAME="nvidia_OpenMath-Nemotron-7B-Q4_K_M.gguf"
+        NODE_NAME="OpenMath-Nemotron 7B Q4"
+    else
+        animate_text "    🜲 Recommending: ⬢ 16 Qwen 3 1.7B optimized for efficiency"
+        LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
+        NODE_NAME="Qwen 3 1.7B Q4"
+    fi
+}
+
+BANNER="
+   ▒█████░      ▒█████░    █████████░  █████████░
+  ▓███████▓    ▓███████▓   █████████░  █████████░
+ ░█████████░  ░█████████░  █████████░  █████████░
+  ▓███████▓    ▓███████▓   █████████░  █████████░
+   ▒█████░      ▒█████░    █████████░  █████████░
+                           █████████░  █████████░
+   ▒█████░      ▒█████░    █████████░  █████████░
+  ▓███████▓    ▓███████▓   █████████░  █████████░
+ ░█████████░  ░█████████░  █████████░  █████████░
+  ▓███████▓    ▓███████▓   █████████░  █████████░
+   ▒█████░      ▒█████░    █████████░  █████████░
+"
+BANNER_FULLNAME="
+
+ ▒██  ░█▓░  ▒███  ▒███   ▒█████▒             █▓           ▒▓
+████░ ████░ ▒███  ▒███   ▒█▒     ▒▓░▒  ▒██▓░▓██▒▒▓▓   ▓▒▒███▓░█▓  █▓  ▓█  ▒▓░▒
+ ▒▓░   ▒▓░  ▒███  ▒███   ▒████▒ ▒█  ▓█ ██▒ ░ ██░  █▓  ▓█░ ██  ██ ▓▓█  ██ ▒█  ▓█
+ ░▓▓   ░▓▓  ▒███  ▒███   ▒█░    █▓  █▓ ▓█    █▒   ▒█▒█▓   █▓  ░█▒█▒██▒█▓ █▓  █▓
+████░ ████░ ▒███  ▒███   ▒█░    ▒█  ▓█ ██    █▓    ▓██░   ██   ███ ▒██▒  ▒█  ▓█
+ ▒██   ░▓▒  ▒███  ▒███   ▒█░     ░▒▓░  █▓    ░░▓▒   ▓█░   ▒░▓▒  █▒  █▒░   ░▓▓░
+                                                 ░░█▓
+"
+animate_text_x2 "$BANNER"
+animate_text "      Welcome to ::|| Fortytwo, Noderunner."
+echo
+
+# Modified to bypass NVIDIA GPU check and use CPU mode
+MEMORY_TYPE="RAM"
+if command -v nvidia-smi &> /dev/null; then
+    echo "    ↳ NVIDIA GPU detected, but we'll use CPU mode as requested."
+else
+    echo "    ↳ No NVIDIA GPU detected. Running in CPU mode."
 fi
 
-PRIVATE_KEY="$1"
+PROJECT_DIR="./FortytwoNode"
+PROJECT_DEBUG_DIR="$PROJECT_DIR/debug"
+PROJECT_MODEL_CACHE_DIR="$PROJECT_DIR/model_cache"
 
-# Print banner
-echo -e "${GREEN}================== WELCOME TO VOTING DAPPs =======================${NC}"
-echo -e "${YELLOW}
- ██████╗██╗   ██╗ █████╗ ███╗   ██╗███╗   ██╗ ██████╗ ██████╗ ███████╗
-██╔════╝██║   ██║██╔══██╗████╗  ██║████╗  ██║██╔═══██╗██╔══██╗██╔════╝
-██║     ██║   ██║███████║██╔██╗ ██║██╔██╗ ██║██║   ██║██║  ██║█████╗  
-██║     ██║   ██║██╔══██║██║╚██╗██║██║╚██╗██║██║   ██║██║  ██║██╔══╝  
-╚██████╗╚██████╔╝██║  ██║██║ ╚████║██║ ╚████║╚██████╔╝██████╔╝███████╗
- ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝
-${NC}"
-echo -e "${GREEN}=========================================================================${NC}"
-echo -e "${MAGENTA}         Welcome to Voting Onchain Testnet & Mainnet Interactive   ${NC}"
-echo -e "${YELLOW}           - CUANNODE By Greyscope&Co, Credit By Arcxteam -     ${NC}"
-echo -e "${GREEN}=========================================================================${NC}"
+CAPSULE_EXEC="$PROJECT_DIR/FortytwoCapsule"
+CAPSULE_LOGS="$PROJECT_DEBUG_DIR/FortytwoCapsule.logs"
+CAPSULE_READY_URL="http://0.0.0.0:42442/ready"
 
-# Check if script is run as root, and if not, restart with sudo
-if [ "$EUID" -ne 0 ]; then
-  echo -e "${YELLOW}Script must be run as root. Restarting with sudo...${NC}"
-  exec sudo "$0" "$@"
-  exit $?
+PROTOCOL_EXEC="$PROJECT_DIR/FortytwoProtocol"
+PROTOCOL_DB_DIR="$PROJECT_DEBUG_DIR/internal_db"
+
+ACCOUNT_PRIVATE_KEY_FILE="$PROJECT_DIR/.account_private_key"
+
+UTILS_EXEC="$PROJECT_DIR/FortytwoUtils"
+
+animate_text "Preparing your node environment..."
+
+if [[ ! -d "$PROJECT_DEBUG_DIR" || ! -d "$PROJECT_MODEL_CACHE_DIR" ]]; then
+    mkdir -p "$PROJECT_DEBUG_DIR" "$PROJECT_MODEL_CACHE_DIR"
+    echo
+    # animate_text "Project directory created: $PROJECT_DIR"
+else
+    echo
+    # animate_text "Project directory already exists: $PROJECT_DIR"
 fi
 
-# Function to check and install dependencies
-install_dependencies() {
-  echo -e "${YELLOW}Checking and installing dependencies...${NC}"
-  
-  # Update package lists
-  apt update
-  
-  # Install required packages
-  apt install -y curl wget jq build-essential git screen
+USER=$(logname)
+chown "$USER:$USER" "$PROJECT_DIR"
 
-  # Check if Go is installed and has correct version (1.18+)
-  if ! command -v go &> /dev/null; then
-    echo -e "${YELLOW}Go not installed. Installing Go...${NC}"
-    wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
-    tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
-    export PATH=$PATH:/usr/local/go/bin
-    echo 'export PATH=$PATH:/usr/local/go/bin' >> /root/.bashrc
-    rm go1.22.2.linux-amd64.tar.gz
-  else
-    # Check Go version
-    GO_VERSION=$(go version | grep -oP 'go\K[0-9]+\.[0-9]+' || echo "0.0")
-    GO_MAJOR=$(echo $GO_VERSION | cut -d. -f1)
-    GO_MINOR=$(echo $GO_VERSION | cut -d. -f2)
-    
-    if [ "$GO_MAJOR" -lt 1 ] || ([ "$GO_MAJOR" -eq 1 ] && [ "$GO_MINOR" -lt 18 ]); then
-      echo -e "${YELLOW}Go version $GO_VERSION is below required version 1.18. Upgrading Go...${NC}"
-      wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
-      rm -rf /usr/local/go
-      tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
-      export PATH=$PATH:/usr/local/go/bin
-      rm go1.22.2.linux-amd64.tar.gz
-    else
-      echo -e "${GREEN}Go version $GO_VERSION is already installed and meets minimum requirement (1.18+)${NC}"
-    fi
-  fi
-  
-  # Check if Rust is installed and has correct version (1.81+)
-  if ! command -v rustc &> /dev/null; then
-    echo -e "${YELLOW}Rust not installed. Installing Rust...${NC}"
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source $HOME/.cargo/env
-    echo 'source $HOME/.cargo/env' >> /root/.bashrc
-  else
-    # Check Rust version
-    RUST_VERSION=$(rustc --version | grep -oP '\d+\.\d+\.\d+' || echo "0.0.0")
-    RUST_MAJOR=$(echo $RUST_VERSION | cut -d. -f1)
-    RUST_MINOR=$(echo $RUST_VERSION | cut -d. -f2)
-    
-    if [ "$RUST_MAJOR" -lt 1 ] || ([ "$RUST_MAJOR" -eq 1 ] && [ "$RUST_MINOR" -lt 81 ]); then
-      echo -e "${YELLOW}Rust version $RUST_VERSION is below required version 1.81. Updating Rust...${NC}"
-      rustup update stable
-    else
-      echo -e "${GREEN}Rust version $RUST_VERSION is already installed and meets minimum requirement (1.81+)${NC}"
-    fi
-  fi
-  
-  # Install Risc0 Toolchain if not already installed
-  if ! command -v rzup &> /dev/null; then
-    echo -e "${YELLOW}Installing Risc0 Toolchain...${NC}"
-    curl -L https://risczero.com/install | bash -
-    source ~/.bashrc
-    
-    # Check if rzup is now available
-    if command -v rzup &> /dev/null; then
-      echo -e "${YELLOW}Running rzup install...${NC}"
-      rzup install
-    else
-      echo -e "${YELLOW}Warning: rzup command not found after installation.${NC}"
-      echo -e "${YELLOW}You may need to run the following manually after installation:${NC}"
-      echo -e "${GREEN}source ~/.bashrc && rzup install${NC}"
-    fi
-  else
-    echo -e "${GREEN}Risc0 Toolchain already installed${NC}"
-  fi
-  
-  # Set up environment variables for this session
-  export PATH=$PATH:/usr/local/go/bin:$HOME/.cargo/bin
-  
-  # Verify installations
-  GO_VERSION=$(go version 2>/dev/null || echo "Go not in PATH")
-  RUST_VERSION=$(rustc --version 2>/dev/null || echo "Rust not in PATH")
-  
-  echo -e "${GREEN}Go status: ${GO_VERSION}${NC}"
-  echo -e "${GREEN}Rust status: ${RUST_VERSION}${NC}"
-  
-  echo -e "${GREEN}Dependencies check completed${NC}"
-}
+if ! command -v curl &> /dev/null; then
+    animate_text "    ↳ Curl is not installed. Installing curl..."
+    apt update && apt install -y curl
+    echo
+fi
 
-# Function to clone and setup Light Node
-setup_light_node() {
-  echo -e "${YELLOW}Setting up LayerEdge Light Node...${NC}"
-  
-  # Clone the Light Node repository
-  cd /root
-  if [ ! -d "/root/light-node/.git" ]; then
-    echo -e "${YELLOW}Cloning Light Node repository...${NC}"
-    git clone https://github.com/Layer-Edge/light-node.git
-  else
-    echo -e "${YELLOW}Light Node repository already exists, pulling latest changes...${NC}"
-    cd /root/light-node
-    git pull
-  fi
-  
-  cd /root/light-node
-  
-  # Check repo structure
-  if [ ! -d "risc0-merkle-service" ]; then
-    echo -e "${RED}Error: Directory structure seems incorrect. risc0-merkle-service directory not found.${NC}"
-    echo -e "${YELLOW}This might be a different repository structure than expected.${NC}"
-    echo -e "${YELLOW}Trying alternative repository name...${NC}"
-    
-    cd /root
-    git clone https://github.com/Layer-Edge/light-node-release.git light-node-temp
-    
-    if [ -d "/root/light-node-temp/risc0-merkle-service" ]; then
-      echo -e "${GREEN}Found correct repository structure in alternative repo!${NC}"
-      rm -rf /root/light-node
-      mv /root/light-node-temp /root/light-node
-    else
-      rm -rf /root/light-node-temp
-      echo -e "${RED}Error: Could not find the correct repository structure.${NC}"
-      echo -e "${YELLOW}Please verify the repository manually.${NC}"
-      exit 1
-    fi
-  fi
-  
-  cd /root/light-node
-  
-  # Setup .env file
-  echo -e "${YELLOW}Creating .env file...${NC}"
-  cat > .env << EOF
-GRPC_URL=grpc.testnet.layeredge.io:9090
-CONTRACT_ADDR=cosmos1ufs3tlq4umljk0qfe8k5ya0x6hpavn897u2cnf9k0en9jr7qarqqt56709
-ZK_PROVER_URL=http://127.0.0.1:3001
-# Alternatively:
-ZK_PROVER_URL=https://layeredge.mintair.xyz/
-API_REQUEST_TIMEOUT=100
-POINTS_API=https://light-node.layeredge.io
-PRIVATE_KEY='${PRIVATE_KEY}'
-EOF
-  
-  echo -e "${GREEN}.env file created successfully${NC}"
-}
+animate_text "▒▓░ Checking for the Latest Components Versions ░▓▒"
+echo
+animate_text "◰ Setup script — version validation"
 
-# Function to check and setup Merkle Service
-setup_merkle_service() {
-  echo -e "${YELLOW}Setting up Risc0 Merkle Service...${NC}"
-  
-  cd /root/light-node/risc0-merkle-service
-  
-  # Check if there's a run_merkle_tree.sh script
-  if [ -f "run_merkle_tree.sh" ]; then
-    echo -e "${YELLOW}Found run_merkle_tree.sh script, making it executable...${NC}"
-    chmod +x run_merkle_tree.sh
-  else
-    # Build Merkle Service with Cargo
-    echo -e "${YELLOW}Building Merkle Service with Cargo...${NC}"
-    source $HOME/.cargo/env
-    cargo build
-  fi
-  
-  echo -e "${GREEN}Merkle Service setup completed${NC}"
-}
+# --- Update setup script ---
+INSTALLER_UPDATE_URL="https://raw.githubusercontent.com/Fortytwo-Network/fortytwo-console-app/main/linux.sh"
+SCRIPT_PATH="$0"
+TEMP_FILE=$(mktemp)
 
-# Function to build Light Node
-build_light_node() {
-  echo -e "${YELLOW}Building LayerEdge Light Node...${NC}"
-  
-  cd /root/light-node
-  
-  # Set correct Go environment
-  export PATH=$PATH:/usr/local/go/bin
-  
-  # First check if an executable already exists
-  if [ -f "light-node" ]; then
-    echo -e "${GREEN}Found pre-built light-node executable${NC}"
-  elif [ -f "main" ]; then
-    echo -e "${GREEN}Found pre-built main executable${NC}"
-  else
-    # Build Light Node using go build
-    echo -e "${YELLOW}Building Light Node with Go...${NC}"
-    
-    # Check if go.mod exists
-    if [ -f "go.mod" ]; then
-      go build
-      
-      # Check if build was successful
-      if [ $? -ne 0 ]; then
-        echo -e "${RED}Failed to build Light Node with 'go build'.${NC}"
-        echo -e "${YELLOW}Trying alternative build command 'go build -o light-node main.go'...${NC}"
-        go build -o light-node main.go
-      fi
-    else
-      echo -e "${RED}Error: go.mod not found. Cannot build the Light Node.${NC}"
-      exit 1
-    fi
-  fi
-  
-  # Verify the executable exists after build
-  if [ -f "light-node" ]; then
-    echo -e "${GREEN}light-node executable found${NC}"
-  elif [ -f "main" ]; then
-    echo -e "${GREEN}main executable found${NC}"
-  else
-    echo -e "${RED}Error: No executable found after build. Build may have failed.${NC}"
+curl -fsSL -o "$TEMP_FILE" "$INSTALLER_UPDATE_URL"
+
+# Check download
+if [ ! -s "$TEMP_FILE" ]; then
+    echo "    ✕ ERROR: Failed to download the update. Check your internet connection and try again."
     exit 1
-  fi
-  
-  echo -e "${GREEN}Light Node build completed${NC}"
-}
+fi
 
-# Function to create systemd service for Merkle Service
-create_merkle_service() {
-  echo -e "${YELLOW}Creating systemd service for Risc0 Merkle Service...${NC}"
-  
-  # Check the content of run_merkle_tree.sh if it exists
-  if [ -f "/root/light-node/risc0-merkle-service/run_merkle_tree.sh" ]; then
-    echo -e "${YELLOW}Checking run_merkle_tree.sh content...${NC}"
-    chmod +x /root/light-node/risc0-merkle-service/run_merkle_tree.sh
-    
-    # Try running script directly to see if it works
-    echo -e "${YELLOW}Testing run_merkle_tree.sh (output suppressed)...${NC}"
-    cd /root/light-node/risc0-merkle-service
-    if timeout 5 ./run_merkle_tree.sh > /dev/null 2>&1; then
-      echo -e "${GREEN}run_merkle_tree.sh appears to be working.${NC}"
-      MERKLE_EXEC_CMD="/bin/bash /root/light-node/risc0-merkle-service/run_merkle_tree.sh"
+# Comment out auto-update to prevent reversion to GPU check
+echo "    ✓ Skipping auto-update to maintain CPU compatibility."
+rm "$TEMP_FILE"
+
+CAPSULE_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest")
+animate_text "⎔ Capsule — version $CAPSULE_VERSION"
+DOWNLOAD_CAPSULE_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/v$CAPSULE_VERSION/FortytwoCapsule-linux-amd64"
+if [[ -f "$CAPSULE_EXEC" ]]; then
+    CURRENT_CAPSULE_VERSION_OUTPUT=$("$CAPSULE_EXEC" --version 2>/dev/null)
+    if [[ "$CURRENT_CAPSULE_VERSION_OUTPUT" == *"$CAPSULE_VERSION"* ]]; then
+        animate_text "    ✓ Up to date"
     else
-      echo -e "${YELLOW}run_merkle_tree.sh test failed, using cargo run directly instead.${NC}"
-      MERKLE_EXEC_CMD="/root/.cargo/bin/cargo run"
+        animate_text "    ↳ Updating..."
+        # Force CPU version download
+        animate_text "    ↳ Downloading CPU capsule..."
+        curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL"
+        chmod +x "$CAPSULE_EXEC"
+        animate_text "    ✓ Successfully updated"
     fi
-  else
-    echo -e "${YELLOW}run_merkle_tree.sh not found, using cargo run...${NC}"
-    MERKLE_EXEC_CMD="/root/.cargo/bin/cargo run"
-  fi
-  
-  # Create systemd service file
-  cat > /etc/systemd/system/layeredge-merkle.service << EOF
-[Unit]
-Description=LayerEdge Risc0 Merkle Service
-After=network.target
+else
+    # Force CPU version download
+    animate_text "    ↳ Downloading CPU capsule..."
+    curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL"
+    chmod +x "$CAPSULE_EXEC"
+    animate_text "    ✓ Installed to: $CAPSULE_EXEC"
+fi
+PROTOCOL_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/latest")
+animate_text "⏃ Protocol Node — version $PROTOCOL_VERSION"
+DOWNLOAD_PROTOCOL_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/v$PROTOCOL_VERSION/FortytwoProtocolNode-linux-amd64"
+if [[ -f "$PROTOCOL_EXEC" ]]; then
+    CURRENT_PROTOCOL_VERSION_OUTPUT=$("$PROTOCOL_EXEC" --version 2>/dev/null)
 
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/root/light-node/risc0-merkle-service
-ExecStart=${MERKLE_EXEC_CMD}
-Restart=always
-RestartSec=15
-StandardOutput=journal
-StandardError=journal
-Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.cargo/bin
-Environment=RUST_BACKTRACE=1
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-  # Reload systemd to pick up the new service
-  systemctl daemon-reload
-  
-  # Enable the service to start on boot
-  systemctl enable layeredge-merkle.service
-  
-  # Start the service
-  systemctl start layeredge-merkle.service
-  
-  # Check if service started successfully
-  if systemctl is-active --quiet layeredge-merkle.service; then
-    echo -e "${GREEN}Merkle Service systemd service created and started successfully!${NC}"
-  else
-    echo -e "${YELLOW}Merkle Service failed to start with run_merkle_tree.sh, trying with cargo run...${NC}"
-    
-    # Modify service to use cargo run directly
-    cat > /etc/systemd/system/layeredge-merkle.service << EOF
-[Unit]
-Description=LayerEdge Risc0 Merkle Service
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/root/light-node/risc0-merkle-service
-ExecStart=/root/.cargo/bin/cargo run
-Restart=always
-RestartSec=15
-StandardOutput=journal
-StandardError=journal
-Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/root/.cargo/bin
-Environment=RUST_BACKTRACE=1
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    # Reload and restart
-    systemctl daemon-reload
-    systemctl restart layeredge-merkle.service
-    
-    if systemctl is-active --quiet layeredge-merkle.service; then
-      echo -e "${GREEN}Merkle Service started successfully with cargo run!${NC}"
+    if [[ "$CURRENT_PROTOCOL_VERSION_OUTPUT" == *"$PROTOCOL_VERSION"* ]]; then
+        animate_text "    ✓ Up to date"
     else
-      echo -e "${RED}Warning: Merkle Service failed to start. Light Node may not function correctly.${NC}"
-      echo -e "${YELLOW}You can check the logs with: journalctl -u layeredge-merkle.service${NC}"
+        animate_text "    ↳ Updating..."
+        curl -L -o "$PROTOCOL_EXEC" "$DOWNLOAD_PROTOCOL_URL"
+        chmod +x "$PROTOCOL_EXEC"
+        animate_text "    ✓ Successfully updated"
     fi
-  fi
-  
-  # Wait for Merkle Service to initialize
-  echo -e "${YELLOW}Waiting for Merkle Service to initialize (30 seconds)...${NC}"
-  sleep 30
+else
+    animate_text "    ↳ Downloading..."
+    curl -L -o "$PROTOCOL_EXEC" "$DOWNLOAD_PROTOCOL_URL"
+    chmod +x "$PROTOCOL_EXEC"
+    animate_text "    ✓ Installed to: $PROTOCOL_EXEC"
+fi
+UTILS_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/utilities/latest")
+animate_text "⨳ Utils — version $UTILS_VERSION"
+DOWNLOAD_UTILS_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com/utilities/v$UTILS_VERSION/FortytwoUtilsLinux"
+if [[ -f "$UTILS_EXEC" ]]; then
+    CURRENT_UTILS_VERSION_OUTPUT=$("$UTILS_EXEC" --version 2>/dev/null)
+    if [[ "$CURRENT_UTILS_VERSION_OUTPUT" == *"$UTILS_VERSION"* ]]; then
+        animate_text "    ✓ Up to date"
+    else
+        animate_text "    ↳ Updating..."
+        curl -L -o "$UTILS_EXEC" "$DOWNLOAD_UTILS_URL"
+        chmod +x "$UTILS_EXEC"
+        animate_text "    ✓ Successfully updated"
+    fi
+else
+    animate_text "    ↳ Downloading..."
+    curl -L -o "$UTILS_EXEC" "$DOWNLOAD_UTILS_URL"
+    chmod +x "$UTILS_EXEC"
+    animate_text "    ✓ Installed to: $UTILS_EXEC"
+fi
+
+echo
+animate_text "▒▓░ Identity Initialization ░▓▒"
+
+if [[ -f "$ACCOUNT_PRIVATE_KEY_FILE" ]]; then
+    ACCOUNT_PRIVATE_KEY=$(cat "$ACCOUNT_PRIVATE_KEY_FILE")
+    echo
+    animate_text "    ↳ Private key found at $PROJECT_DIR/.account_private_key."
+    animate_text "    ↳ Initiating the node using an existing identity."
+    animate_text "    ⚠ Keep the private key safe. Do not share with anyone."
+    echo "    ⚠ Recover your node or access your wallet with it."
+    echo "    ⚠ We will not be able to recover it if it is lost."
+else
+    echo
+    echo -e "╔════════════════════ NETWORK IDENTITY ═══════════════════╗"
+    echo -e "║                                                         ║"
+    echo -e "║  Each node requires a secure blockchain identity.       ║"
+    echo -e "║  Select one of the following options:                   ║"
+    echo -e "║                                                         ║"
+    echo -e "║  1. Create a new identity with an activation code.      ║"
+    echo -e "║     Recommended for new nodes.                          ║"
+    echo -e "║                                                         ║"
+    echo -e "║  2. Recover an existing identity with recovery phrase.  ║"
+    echo -e "║     Use this if you're restoring a previous node.       ║"
+    echo -e "║                                                         ║"
+    echo -e "╚═════════════════════════════════════════════════════════╝"
+    echo
+    read -r -p "Select option [1-2]: " IDENTITY_OPTION
+    echo
+    IDENTITY_OPTION=${IDENTITY_OPTION:-1}
+    if [[ "$IDENTITY_OPTION" == "2" ]]; then
+        animate_text "[2] Recovering existing identity"
+        echo
+        while true; do
+            read -r -p "Enter your account recovery phrase (12, 18, or 24 words), then press Enter: " ACCOUNT_SEED_PHRASE
+            echo
+            if ! ACCOUNT_PRIVATE_KEY=$("$UTILS_EXEC" --phrase "$ACCOUNT_SEED_PHRASE"); then
+                echo "˙◠˙ Error: Please check the recovery phrase and try again."
+                continue
+            else
+                animate_text "$ACCOUNT_PRIVATE_KEY" > "$ACCOUNT_PRIVATE_KEY_FILE"
+                animate_text "˙ᵕ˙ The identity successfully restored!"
+                animate_text "    ↳ Private key saved to $PROJECT_DIR/.account_private_key."
+                echo "    ⚠ Keep the key secure. Do not share with anybody."
+                echo "    ⚠ Restore your node or access your wallet with it."
+                echo "    ⚠ We will not be able to recover it would it be lost."
+                break
+            fi
+        done
+    else
+        animate_text "[1] Creating a new identity with an activation code"
+        echo
+        while true; do
+            read -r -p "Enter your activation code: " INVITE_CODE
+            echo
+            if [[ -z "$INVITE_CODE" || ${#INVITE_CODE} -lt 12 ]]; then
+                echo "˙◠˙ Invalid activation code. Check the code and try again."
+                echo
+                continue
+            fi
+            break
+        done
+        animate_text "    ↳ Validating your identity..."
+        WALLET_UTILS_EXEC_OUTPUT="$("$UTILS_EXEC" --create-wallet "$ACCOUNT_PRIVATE_KEY_FILE" --drop-code "$INVITE_CODE" 2>&1)"
+        UTILS_EXEC_CODE=$?
+
+        if [ "$UTILS_EXEC_CODE" -gt 0 ]; then
+            echo "$WALLET_UTILS_EXEC_OUTPUT" | tail -n 1
+            echo
+            echo "˙◠˙ This code has already been activated. Please check your code and try again. You entered: $INVITE_CODE"
+            echo
+            rm -f "$ACCOUNT_PRIVATE_KEY_FILE"
+            exit 1
+        fi
+        animate_text "    ↳ Write down your new node identity:"
+        echo "$WALLET_UTILS_EXEC_OUTPUT"
+        ACCOUNT_PRIVATE_KEY=$(<"$ACCOUNT_PRIVATE_KEY_FILE")
+        echo
+        animate_text "    ✓ Identity configured and securely stored!"
+        echo
+        echo -e "╔═════════════════ ATTENTION, NODERUNNER ═════════════════╗"
+        echo -e "║                                                         ║"
+        echo -e "║  1. Write down your secret recovery phrase              ║"
+        echo -e "║  2. Keep your private key safe                          ║"
+        echo -e "║     ↳ Get .account_private_key key from ./FortytwoNode/ ║"
+        echo -e "║     ↳ Store it outside the App directory                ║"
+        echo -e "║                                                         ║"
+        echo -e "║  ⚠ Keep the recovery phrase and private key safe.       ║"
+        echo -e "║  ⚠ Do not share them with anyone.                       ║"
+        echo -e "║  ⚠ Use them to restore your node or access your wallet. ║"
+        echo -e "║  ⚠ We won't be able to recover them if they are lost.   ║"
+        echo -e "║                                                         ║"
+        echo -e "╚═════════════════════════════════════════════════════════╝"
+        echo
+        while true; do
+            read -r -p "To continue, please type 'Done': " user_input
+            if [ "$user_input" = "Done" ]; then
+                break
+            fi
+            echo "Incorrect input. Please type 'Done' to continue."
+        done
+    fi
+fi
+echo
+animate_text "▒▓░ The Unique Strength of Your Node ░▓▒"
+echo
+animate_text "Each AI node has unique strengths."
+animate_text "Choose how your node will contribute to the collective intelligence:"
+echo 
+auto_select_model
+# echo "    Already downloaded models: ⬢ 4, ⬢ 5"
+echo
+echo "╔═══════════════════════════════════════════════════════════════════════════╗"
+animate_text_x2 "║ 0 ⌖ AUTO-SELECT - Optimal configuration                                   ║"
+echo "║     Let the system determine the best model for your hardware.            ║"
+echo "║     Balanced for performance and capabilities.                            ║"
+echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+animate_text_x2 "║ 1 ✶ IMPORT CUSTOM - Advanced configuration                                ║"
+echo "╚═══════════════════════════════════════════════════════════════════════════╝"
+#animate_text_x2 "║ 2 ↺ LAST USED - Run the model that was run the last time                  ║"
+echo "                CPU TIER | Optimized for Intel UHD Graphics                "
+echo "╔═══════════════════════════════════════════════════════════════════════════╗"
+
+# Replace heavy models with smaller CPU-friendly versions
+animate_text_x2 "║ 7 ⬢ GENERAL KNOWLEDGE                            Qwen3 8B Q4 • 5.1GB ${MEMORY_TYPE} ║"
+echo "║     Versatile multi-domain intelligence core with balanced capabilities.  ║"
+echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+animate_text_x2 "║ 10 ⬢ MATH & CODE                               MiMo 7B RL Q4 • 5.1GB ${MEMORY_TYPE} ║"
+echo "║     Solves math and logic problems effectively,                           ║"
+echo "║     with strong performance in structured reasoning and code tasks.       ║"
+echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+animate_text_x2 "║ 12 ⬢ THEOREM PROVER                 DeepSeek-Prover V2 7B Q4 • 4.3GB ${MEMORY_TYPE} ║"
+echo "║     Expert in formal logic and proof solving,                             ║"
+echo "║     perfect for mathematics, theorem work, and structured reasoning tasks.║"
+echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+animate_text_x2 "║ 13 ⬢ MULTILINGUAL UNDERSTANDING                Gemma-3 4B Q4 • 2.6GB ${MEMORY_TYPE} ║"
+echo "║     Balanced intelligence with high-quality cross-lingual comprehension,  ║"
+echo "║     translation and multilingual reasoning.                               ║"
+echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+animate_text_x2 "║ 15 ⬢ PROGRAMMING & ALGORITHMS             OlympicCoder 7B Q6 • 6.3GB ${MEMORY_TYPE} ║"
+echo "║     Optimized for symbolic reasoning, step-by-step math solutions         ║"
+echo "║     and logic-based inference.                                            ║"
+echo "╠═══════════════════════════════════════════════════════════════════════════╣"
+animate_text_x2 "║ 16 ⬢ LOW MEMORY MODEL                          Qwen3 1.7B Q4 • 1.2GB ${MEMORY_TYPE} ║"
+echo "║     Ultra-efficient for resource-constrained environments,                ║"
+echo "║     providing basic instruction-following and reasoning functionalities.  ║"
+echo "╚═══════════════════════════════════════════════════════════════════════════╝"
+echo
+
+read -r -p "Select your node's specialization [0-16] (0 for auto-select): " NODE_CLASS
+
+case $NODE_CLASS in
+    0)
+        animate_text "⌖ Analyzing system for optimal configuration:"
+        auto_select_model
+        ;;
+    1)
+        echo
+        echo "══════════════════ CUSTOM MODEL IMPORT ════════════════════"
+        echo "     Intended for users familiar with language models."
+        echo
+        read -r -p "Enter HuggingFace repository (e.g., Qwen/Qwen2.5-3B-Instruct-GGUF): " LLM_HF_REPO
+        read -r -p "Enter model filename (e.g., qwen2.5-3b-instruct-q4_k_m.gguf): " LLM_HF_MODEL_NAME
+        NODE_NAME="✶ CUSTOM IMPORT: HuggingFace ${LLM_HF_REPO##*/}"
+        ;;
+    7)
+        LLM_HF_REPO="unsloth/Qwen3-8B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-8B-Q4_K_M.gguf"
+        NODE_NAME="⬢ GENERAL KNOWLEDGE: Qwen3 8B Q4"
+        ;;
+    10)
+        LLM_HF_REPO="jedisct1/MiMo-7B-RL-GGUF"
+        LLM_HF_MODEL_NAME="MiMo-7B-RL-Q4_K_M.gguf"
+        NODE_NAME="⬢ MATH & CODE: MiMo 7B RL Q4"
+        ;;
+    12)
+        LLM_HF_REPO="irmma/DeepSeek-Prover-V2-7B-Q4_K_M-GGUF"
+        LLM_HF_MODEL_NAME="deepseek-prover-v2-7b-q4_k_m-imat.gguf"
+        NODE_NAME="⬢ THEOREM PROVER: DeepSeek-Prover V2 7B Q4"
+        ;;
+    13)
+        LLM_HF_REPO="unsloth/gemma-3-4b-it-GGUF"
+        LLM_HF_MODEL_NAME="gemma-3-4b-it-Q4_K_M.gguf"
+        NODE_NAME="⬢ MULTILINGUAL UNDERSTANDING: Gemma-3 4B Q4"
+        ;;
+    15)
+        LLM_HF_REPO="bartowski/open-r1_OlympicCoder-7B-GGUF"
+        LLM_HF_MODEL_NAME="open-r1_OlympicCoder-7B-Q4_K_M.gguf"
+        NODE_NAME="⬢ PROGRAMMING & ALGORITHMS: OlympicCoder 7B Q6"
+        ;;
+    16)
+        LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
+        NODE_NAME="⬢ LOW MEMORY MODEL: Qwen3 1.7B Q4"
+        ;;
+    *)
+        animate_text "No selection made. Continuing with [0] ⌖ AUTO-SELECT..."
+        auto_select_model
+        ;;
+esac
+echo
+echo "You chose:"
+animate_text "${NODE_NAME}"
+echo
+animate_text "    ↳ Downloading the model and preparing the environment may take several minutes..."
+"$UTILS_EXEC" --hf-repo "$LLM_HF_REPO" --hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR"
+echo
+animate_text "Setup completed. Ready to launch."
+
+animate_text_x2 "$BANNER_FULLNAME"
+
+startup() {
+    animate_text "⎔ Starting Capsule..."
+    # Modified to explicitly specify CPU mode
+    "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" --llm-hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR" --cpu-only > "$CAPSULE_LOGS" 2>&1 &
+    CAPSULE_PID=$!
+
+    animate_text "Be patient, it may take some time."
+    while true; do
+        STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CAPSULE_READY_URL")
+        if [[ "$STATUS_CODE" == "200" ]]; then
+            animate_text "Capsule is ready."
+            break
+        else
+            # Capsule is not ready. Retrying in 5 seconds...
+            sleep 5
+        fi
+        if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
+            echo -e "\033[0;31mCapsule process exited (PID: $CAPSULE_PID)\033[0m"
+            if [[ -f "$CAPSULE_LOGS" ]]; then
+                tail -n 20 "$CAPSULE_LOGS"  # Show more log lines for debugging
+            fi
+            exit 1
+        fi
+    done
+    animate_text "⏃ Starting Protocol..."
+    echo
+    animate_text "Joining ::||"
+    echo
+    "$PROTOCOL_EXEC" --account-private-key "$ACCOUNT_PRIVATE_KEY" --db-folder "$PROTOCOL_DB_DIR" &
+    PROTOCOL_PID=$!
 }
 
-# Function to create systemd service for Light Node
-create_light_node_service() {
-  echo -e "${YELLOW}Creating systemd service for LayerEdge Light Node...${NC}"
-  
-  # Determine executable name
-  LIGHT_NODE_EXECUTABLE="light-node"
-  if [ ! -f "/root/light-node/light-node" ] && [ -f "/root/light-node/main" ]; then
-    LIGHT_NODE_EXECUTABLE="main"
-  fi
-  
-  # Create systemd service file
-  cat > /etc/systemd/system/layeredge.service << EOF
-[Unit]
-Description=LayerEdge Light Node Service
-After=layeredge-merkle.service
-Requires=layeredge-merkle.service
+cleanup() {
+    echo
+    capsule_stopped=$(kill -0 "$CAPSULE_PID" 2>/dev/null && kill "$CAPSULE_PID" 2>/dev/null && echo true || echo false)
+    [ "$capsule_stopped" = true ] && animate_text "⎔ Stopping capsule..."
 
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/root/light-node
-ExecStart=/root/light-node/${LIGHT_NODE_EXECUTABLE}
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin
+    protocol_stopped=$(kill -0 "$PROTOCOL_PID" 2>/dev/null && kill "$PROTOCOL_PID" 2>/dev/null && echo true || echo false)
+    [ "$protocol_stopped" = true ] && animate_text "⏃ Stopping protocol..."
 
-[Install]
-WantedBy=multi-user.target
-EOF
-
-  # Reload systemd to pick up the new service
-  systemctl daemon-reload
-  
-  # Enable the service to start on boot
-  systemctl enable layeredge.service
-  
-  # Start the service
-  systemctl start layeredge.service
-  
-  echo -e "${GREEN}Light Node systemd service created and started successfully!${NC}"
+    if [ "$capsule_stopped" = true ] || [ "$protocol_stopped" = true ]; then
+        animate_text "Processes stopped"
+        animate_text "Bye, Noderunner"
+    fi
+    exit 0
 }
 
-# Main installation process
-main() {
-  echo -e "${YELLOW}Starting LayerEdge Light Node installation...${NC}"
-  
-  # Install dependencies
-  install_dependencies
-  
-  # Setup Light Node
-  setup_light_node
-  
-  # Setup Merkle Service
-  setup_merkle_service
-  
-  # Build Light Node
-  build_light_node
-  
-  # Create systemd service for Merkle Service
-  create_merkle_service
-  
-  # Create systemd service for Light Node
-  create_light_node_service
-  
-  # Display status and commands
-  echo -e "${GREEN}====================================================================${NC}"
-  echo -e "${GREEN} LayerEdge Light Node has been installed and started successfully!${NC}"
-  echo -e "${GREEN}====================================================================${NC}"
-  echo -e "${YELLOW}Merkle Service Status:${NC}"
-  systemctl status layeredge-merkle.service --no-pager
-  
-  echo -e "${YELLOW}Light Node Status:${NC}"
-  systemctl status layeredge.service --no-pager
-  
-  echo -e "${GREEN}====================================================================${NC}"
-  echo -e "${YELLOW}Verification Process:${NC}"
-  echo -e "The Light Node will automatically run the verification process from verifier.go"
-  echo -e "This process will verify Merkle proofs and submit them to earn points"
-  echo -e "No additional action is needed - the verification runs automatically as part of the node"
-  echo -e "${GREEN}====================================================================${NC}"
-  
-  echo -e "${YELLOW}You can manage the services with the following commands:${NC}"
-  echo -e "${YELLOW}For Merkle Service:${NC}"
-  echo -e "Check status: ${GREEN}sudo systemctl status layeredge-merkle.service${NC}"
-  echo -e "View logs: ${GREEN}sudo journalctl -u layeredge-merkle.service -f -n 100${NC}"
-  echo -e "Stop service: ${GREEN}sudo systemctl stop layeredge-merkle.service${NC}"
-  echo -e "Start service: ${GREEN}sudo systemctl start layeredge-merkle.service${NC}"
-  echo -e "Restart service: ${GREEN}sudo systemctl restart layeredge-merkle.service${NC}"
-  
-  echo -e "${YELLOW}For Light Node:${NC}"
-  echo -e "Check status: ${GREEN}sudo systemctl status layeredge.service${NC}"
-  echo -e "View logs: ${GREEN}sudo journalctl -u layeredge.service -f -n 100${NC}"
-  echo -e "Stop service: ${GREEN}sudo systemctl stop layeredge.service${NC}"
-  echo -e "Start service: ${GREEN}sudo systemctl start layeredge.service${NC}"
-  echo -e "Restart service: ${GREEN}sudo systemctl restart layeredge.service${NC}"
-  echo -e "${GREEN}====================================================================${NC}"
-}
+startup
+trap cleanup SIGINT SIGTERM SIGHUP EXIT
 
-# Run the main installation
-main
+while true; do
+    IS_ALIVE="true"
+    if ! ps -p "$CAPSULE_PID" > /dev/null; then
+        echo "Capsule has stopped. Restarting..."
+        IS_ALIVE="false"
+    fi
+
+    if ! ps -p "$PROTOCOL_PID" > /dev/null; then
+        echo "Node has stopped. Restarting..."
+        IS_ALIVE="false"
+    fi
+
+    if [[ $IS_ALIVE == "false" ]]; then
+        echo "Capsule or Protocol process has stopped. Restarting..."
+        kill "$CAPSULE_PID" 2>/dev/null
+        kill "$PROTOCOL_PID" 2>/dev/null
+        startup
+    fi
+
+    sleep 5
+done
