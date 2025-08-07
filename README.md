@@ -1,48 +1,25 @@
+# FortyTwo Network Node
 
-1. **Menginstal Dependensi**:
-   - Go versi 1.18 atau lebih tinggi
-   - Rust versi terbaru
-   - Risc0 Toolchain menggunakan installer resmi
+This repository contains installation instructions and helper scripts for setting up the FortyTwo Network console application on Linux systems.
 
-2. **Clone Repositori Light Node**:
-   - Menggunakan repo yang benar: `https://github.com/Layer-Edge/light-node.git`
+## 🚀 Quick Installation
 
-3. **Konfigurasi Lingkungan**:
-   - Membuat file `.env` dengan variabel yang diperlukan:
-     - GRPC_URL
-     - CONTRACT_ADDR
-     - ZK_PROVER_URL
-     - API_REQUEST_TIMEOUT
-     - POINTS_API
-     - PRIVATE_KEY (diberikan sebagai argumen saat menjalankan script)
+Run the following commands to set up the FortyTwo console application:
 
-4. **Merkle Service**:
-   - Build dan jalankan Risc0 Merkle Service
-   - Membuat systemd service untuk Merkle Service
-
-5. **Build dan Jalankan Light Node**:
-   - Build Light Node menggunakan Go
-   - Membuat systemd service untuk Light Node yang bergantung pada Merkle Service
-
-### Cara Menggunakan Script:
-
+### Cloning - Download and install the FortyTwo
 ```bash
-bash layeredge_install.sh "cli-node-private-key"
+git clone https://github.com/arcxteam/fortytwo-node.git
 ```
 
-*Catatan*: Ganti "cli-node-private-key" dengan private key dompet yang sebenarnya.
+### Create a screen session
+```
+screen -S fortytwo
+cd fortytwo-node
+chmod +x install.sh && ./install.sh
+```
 
-### Fitur Tambahan:
+After installation, the FortyTwo console application will be ready to use. You can detach from the screen session using `Ctrl+A+D` and reattach later using:
 
-1. Script ini membuat dua layanan systemd:
-   - `layeredge-merkle.service` - untuk Risc0 Merkle Service
-   - `layeredge.service` - untuk Light Node
-
-2. Kedua layanan dikonfigurasi untuk:
-   - Memulai secara otomatis saat boot
-   - Restart secara otomatis jika crash
-   - Layanan Light Node bergantung pada layanan Merkle Service
-
-3. Log dari kedua layanan dapat dilihat menggunakan `journalctl`.
-
-Apakah ada aspek lain dari proses instalasi yang ingin Anda sesuaikan?​​​​​​​​​​​​​​​​
+```
+screen -r fortytwo
+```
