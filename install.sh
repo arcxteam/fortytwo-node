@@ -25,15 +25,15 @@ auto_select_model() {
     AVAILABLE_MEM_INT=$(printf "%.0f" "$AVAILABLE_MEM")
 
     if [ "$AVAILABLE_MEM_INT" -ge 16 ]; then
-        animate_text "    🜲 Recommending: ⬢ 8 Qwen3 8B for balanced capability"
+        animate_text "    🜲 Recommending: ⬢ 7 Qwen3 8B for balanced capability"
         LLM_HF_REPO="unsloth/Qwen3-8B-GGUF"
         LLM_HF_MODEL_NAME="Qwen3-8B-Q4_K_M.gguf"
         NODE_NAME="Qwen3 8B Q4"
     elif [ "$AVAILABLE_MEM_INT" -ge 8 ]; then
-        animate_text "    🜲 Recommending: ⬢ 11 Nemotron 7B for mathematical intelligence"
-        LLM_HF_REPO="bartowski/nvidia_OpenMath-Nemotron-7B-GGUF"
-        LLM_HF_MODEL_NAME="nvidia_OpenMath-Nemotron-7B-Q4_K_M.gguf"
-        NODE_NAME="OpenMath-Nemotron 7B Q4"
+        animate_text "    🜲 Recommending: ⬢ 13 Gemma-3 4B intelligence with MULTILINGUAL UNDERSTANDING comprehension"
+        LLM_HF_REPO="unsloth/gemma-3-4b-it-GGUF"
+        LLM_HF_MODEL_NAME="gemma-3-4b-it-Q4_K_M.gguf"
+        NODE_NAME="⬢ MULTILINGUAL UNDERSTANDING: Gemma-3 4B Q4"
     else
         animate_text "    🜲 Recommending: ⬢ 16 Qwen 3 1.7B optimized for efficiency"
         LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
@@ -313,11 +313,10 @@ echo "║     Balanced for performance and capabilities.                        
 echo "╠═══════════════════════════════════════════════════════════════════════════╣"
 animate_text_x2 "║ 1 ✶ IMPORT CUSTOM - Advanced configuration                                ║"
 echo "╚═══════════════════════════════════════════════════════════════════════════╝"
-#animate_text_x2 "║ 2 ↺ LAST USED - Run the model that was run the last time                  ║"
-echo "                CPU TIER | Optimized for Intel UHD Graphics                "
+# animate_text_x2 "║ 2 ↺ LAST USED - Run the model that was run the last time                ║"
+echo "               LIGHT TIER | CPU Operating the Node Optimizec                 "
 echo "╔═══════════════════════════════════════════════════════════════════════════╗"
 
-# Replace heavy models with smaller CPU-friendly versions
 animate_text_x2 "║ 7 ⬢ GENERAL KNOWLEDGE                            Qwen3 8B Q4 • 5.1GB ${MEMORY_TYPE} ║"
 echo "║     Versatile multi-domain intelligence core with balanced capabilities.  ║"
 echo "╠═══════════════════════════════════════════════════════════════════════════╣"
