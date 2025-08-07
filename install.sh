@@ -19,7 +19,7 @@ animate_text_x2() {
 
 auto_select_model() {
     # Modified to use CPU RAM instead of VRAM
-    AVAILABLE_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
+    AVAILABLE_MEM=$(awk '/MemTotal/ {print $2 / 1024}' /proc/meminfo)
     animate_text "    ↳ System analysis: ${AVAILABLE_MEM}GB ${MEMORY_TYPE} detected"
 
     AVAILABLE_MEM_INT=$(printf "%.0f" "$AVAILABLE_MEM")
@@ -408,7 +408,7 @@ animate_text_x2 "$BANNER_FULLNAME"
 startup() {
     animate_text "⎔ Starting Capsule..."
     # Modified to explicitly specify CPU mode
-    "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" --llm-hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR" --cpu-only > "$CAPSULE_LOGS" 2>&1 &
+    "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" --llm-hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR" > "$CAPSULE_LOGS" 2>&1 &
     CAPSULE_PID=$!
 
     animate_text "Be patient, it may take some time."
