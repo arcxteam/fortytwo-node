@@ -1,5 +1,3 @@
-apt-get update && apt-get install -y curl unzip screen
-
 # FortyTwo Network Node
 
 This repository contains installation instructions and helper scripts for setting up the FortyTwo Network console application on Linux systems.
@@ -7,17 +5,15 @@ This repository contains installation instructions and helper scripts for settin
 ## 🚀 Installation Depedency & Update
 
 ```
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y \
 sudo apt install -y \
 automake autoconf bsdmainutils build-essential clang curl \
 gcc git htop iptables jq libatomic1 libblas3 libclang-dev \
 libgbm1 liblapack3 liblapack-dev libleveldb-dev libomp-dev \
 libopenblas-dev libopenmpi-dev libssl-dev lz4 make nano \
 ncdu ninja-build nvme-cli ocl-icd-opencl-dev pkg-config \
-python3-pip tar tmux unzip wget
+python3-pip screen tar tmux unzip wget
 ```
-
-
 
 ### Cloning - Download and install the FortyTwo
 ```bash
@@ -38,8 +34,9 @@ chmod +x install.sh && ./install.sh
 
 <img width="1530" height="800" alt="Desktop-screenshot-08-07-2025_02_53_PM" src="https://github.com/user-attachments/assets/ca9e6b1f-16a9-4315-98a8-269ec9eef1f6" />
 
-After installation, the FortyTwo console application will be ready to use. You can detach from the screen session using `Ctrl+A+D` and reattach later using:
+After installation, the FortyTwo console application will be ready to use.
 
 ```
+screen -ls
 screen -r fortytwo
 ```
