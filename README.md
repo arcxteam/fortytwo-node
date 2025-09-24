@@ -40,3 +40,30 @@ After installation, the FortyTwo console application will be ready to use.
 screen -ls
 screen -r fortytwo
 ```
+
+
+### Error Cause
+The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which requires CUDA libraries (`libcuda.so.1`). On CPU-only servers without NVIDIA drivers, this library is missing, causing the load failure.
+
+### Why It Happened
+- Script detects no `nvidia-smi` and selects CPU binary (correct).
+- But download URL appends `-cuda124` for GPU, even in "CPU" branch—likely a script bug (non-existent CPU file defaults to GPU).
+
+### Fix
+1. **Manual Download & Replace**:
+   ```bash
+   cd ~/Fortytwo/fortytwo-console-app-main/FortytwoNode
+   rm -f FortytwoCapsule  # Remove broken binary
+   wget "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/v$(curl -s https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest)/FortytwoCapsule-linux-amd64" -O FortytwoCapsule
+   chmod +x FortytwoCapsule
+   ```
+
+2. **Rerun Script**:
+   ```bash
+   cd ~/Fortytwo/fortytwo-console-app-main
+   ./linux.sh
+   ```
+
+### Notes
+- Official docs require NVIDIA GPU; CPU support may be limited/slower.
+- If fails again, edit script: Remove `+="-cuda124"` in download sections.
