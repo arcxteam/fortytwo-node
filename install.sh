@@ -467,10 +467,10 @@ echo "║     Excels at math questions and structured problem-solving;"
 echo "║     clear steps for academic and competition problems."
 echo "║     "
 animate_text_x2 "║ 18 ⬢ MATH & CODING"
-echo "║     4.9 GB ${MEMORY_TYPE}  • AceReason-Nemotron-1.1-7B Q4"
-echo "║     Handles math and logic puzzles with minimal resources;"
-echo "║     concise, step-by-step solutions."
-echo "║     "
+echo "║ 3.8 GB ${MEMORY_TYPE} • AceReason-Nemotron-1.1-7B Q3 Small"
+echo "║ Handles math and logic puzzles with minimal resources;"
+echo "║ concise, step-by-step solutions."
+echo "║ "
 animate_text_x2 "║ 19 ⬢ THEOREM PROVER"
 echo "║     5.4 GB ${MEMORY_TYPE}  • Kimina Prover Distill 8B Q4"
 echo "║     Specialist in formal logic and proof steps;"
@@ -490,9 +490,15 @@ animate_text_x2 "║ 22 ⬢ LOW MEMORY MODEL"
 echo "║     1.3 GB ${MEMORY_TYPE}  • Qwen3 1.7B Q4"
 echo "║     Ultra-efficient for basic instructions and quick answers;"
 echo "║     suitable for nodes with tight memory."
+echo "║     "
+animate_text_x2 "║ 23 ⬢ MATH & CODING (ULTRA LOW MEMORY)"
+echo "║ 2.8 GB ${MEMORY_TYPE} • AceReason-Nemotron-1.1-7B IQ2 Medium"
+echo "║ Ultra-optimized for low memory; handles math and logic puzzles;"
+echo "║ concise, step-by-step solutions."
+echo "║ "
 echo "╚═════════ LIGHT TIER END"
 echo
-echo "[0] Auto, [1] Import, [2-22] Specialized Model"
+echo "[0] Auto, [1] Import, [2-23] Specialized Model"
 
 read -r -p "Select your node's specialization option: " NODE_CLASS
 
@@ -592,8 +598,8 @@ case $NODE_CLASS in
         ;;
     18)
         LLM_HF_REPO="bartowski/nvidia_AceReason-Nemotron-1.1-7B-GGUF"
-        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-Q3_K_M.gguf"
-        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B Q3"
+        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-Q3_K_S.gguf"
+        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B Q3 Small"
         ;;
     19)
         LLM_HF_REPO="mradermacher/Kimina-Prover-Distill-8B-GGUF"
@@ -614,6 +620,11 @@ case $NODE_CLASS in
         LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
         LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
         NODE_NAME="⬢ LOW MEMORY MODEL: Qwen3 1.7B Q4"
+        ;;
+    23)
+        LLM_HF_REPO="bartowski/nvidia_AceReason-Nemotron-1.1-7B-GGUF"
+        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-IQ2_M.gguf"
+        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B IQ2 Medium"
         ;;
     *)
         animate_text "No selection made. Continuing with [0] ⌖ AUTO-SELECT..."
