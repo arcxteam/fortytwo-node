@@ -202,7 +202,7 @@ if [[ -f "$CAPSULE_EXEC" ]]; then
         animate_text "    ↳ Updating..."
         if command -v nvidia-smi &> /dev/null; then
             animate_text "    ↳ NVIDIA detected. Downloading capsule for NVIDIA systems..."
-            DOWNLOAD_CAPSULE_URL+="-cuda124"
+            DOWNLOAD_CAPSULE_URL
         else
             animate_text "    ↳ No NVIDIA GPU detected. Downloading CPU capsule..."
         fi
@@ -213,7 +213,7 @@ if [[ -f "$CAPSULE_EXEC" ]]; then
 else
     if command -v nvidia-smi &> /dev/null; then
         animate_text "    ↳ NVIDIA detected. Downloading capsule for NVIDIA systems..."
-        DOWNLOAD_CAPSULE_URL+="-cuda124"
+        DOWNLOAD_CAPSULE_URL
     else
         animate_text "    ↳ No NVIDIA GPU detected. Downloading CPU capsule..."
     fi
@@ -592,8 +592,8 @@ case $NODE_CLASS in
         ;;
     18)
         LLM_HF_REPO="bartowski/nvidia_AceReason-Nemotron-1.1-7B-GGUF"
-        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-Q4_K_M.gguf"
-        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B Q4"
+        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-Q3_K_M.gguf"
+        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B Q3"
         ;;
     19)
         LLM_HF_REPO="mradermacher/Kimina-Prover-Distill-8B-GGUF"
