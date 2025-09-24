@@ -18,29 +18,19 @@ animate_text_x2() {
 }
 
 auto_select_model() {
-
-    if command -v nvidia-smi >/dev/null 2>&1; then
-        AVAILABLE_MEM=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null \
-          | awk 'BEGIN{max=0} {g=$1/1024; if(g>max) max=g} END{printf "%.2f", max}')
-        TOTAL_MEM=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null \
-          | awk 'BEGIN{max=0} {g=$1/1024; if(g>max) max=g} END{printf "%.2f", max}')
-    fi
-
-    if [[ -z "$AVAILABLE_MEM" || "$AVAILABLE_MEM" == "0.00" ]]; then
-        AVAILABLE_MEM=$(awk '
-            $1=="MemAvailable:" {avail=$2/1024/1024}
-            $1=="MemFree:"      {free=$2}
-            $1=="Buffers:"      {buf=$2}
-            $1=="Cached:"       {cached=$2}
-            $1=="SReclaimable:" {srec=$2}
-            $1=="Shmem:"        {shm=$2}
-            END{
-              if (avail > 0)      printf "%.2f", avail/1.0;
-              else                 printf "%.2f", (free+buf+cached+srec-shm)/1024/1024;
-            }' /proc/meminfo)
-        TOTAL_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
-    fi
-
+    MEMORY_TYPE="RAM"
+    AVAILABLE_MEM=$(awk '
+        $1=="MemAvailable:" {avail=$2/1024/1024}
+        $1=="MemFree:"      {free=$2}
+        $1=="Buffers:"      {buf=$2}
+        $1=="Cached:"       {cached=$2}
+        $1=="SReclaimable:" {srec=$2}
+        $1=="Shmem:"        {shm=$2}
+        END{
+          if (avail > 0)      printf "%.2f", avail/1.0;
+          else                 printf "%.2f", (free+buf+cached+srec-shm)/1024/1024;
+        }' /proc/meminfo)
+    TOTAL_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
 
     AVAILABLE_MEM_INT=$(awk -v v="$AVAILABLE_MEM" 'BEGIN{printf "%d", int(v)}')
 
@@ -85,7 +75,6 @@ BANNER="
    ▒█████░      ▒█████░    █████████░  █████████░
 "
 BANNER_FULLNAME="
-
  ▒██  ░█▓░  ▒███  ▒███   ▒█████▒             █▓           ▒▓
 ████░ ████░ ▒███  ▒███   ▒█▒     ▒▓░▒  ▒██▓░▓██▒▒▓▓   ▓▒▒███▓░█▓  █▓  ▓█  ▒▓░▒
  ▒▓░   ▒▓░  ▒███  ▒███   ▒████▒ ▒█  ▓█ ██▒ ░ ██░  █▓  ▓█░ ██  ██ ▓▓█  ██ ▒█  ▓█
@@ -97,11 +86,7 @@ BANNER_FULLNAME="
 animate_text_x2 "$BANNER"
 animate_text "      Welcome to ::|| Fortytwo, Noderunner."
 echo
-if command -v nvidia-smi &> /dev/null; then
-    MEMORY_TYPE="VRAM"
-else
-    MEMORY_TYPE=" RAM"
-fi
+MEMORY_TYPE="RAM"
 PROJECT_DIR="./FortytwoNode"
 PROJECT_DEBUG_DIR="$PROJECT_DIR/debug"
 PROJECT_MODEL_CACHE_DIR="$PROJECT_DIR/model_cache"
@@ -111,9 +96,7 @@ CAPSULE_LOGS="$PROJECT_DEBUG_DIR/FortytwoCapsule.logs"
 CAPSULE_READY_URL="http://0.0.0.0:42442/ready"
 
 PROTOCOL_EXEC="$PROJECT_DIR/FortytwoProtocol"
-
 ACCOUNT_PRIVATE_KEY_FILE="$PROJECT_DIR/.account_private_key"
-
 UTILS_EXEC="$PROJECT_DIR/FortytwoUtils"
 
 animate_text "Preparing your node environment..."
@@ -121,10 +104,8 @@ animate_text "Preparing your node environment..."
 if [[ ! -d "$PROJECT_DEBUG_DIR" || ! -d "$PROJECT_MODEL_CACHE_DIR" ]]; then
     mkdir -p "$PROJECT_DEBUG_DIR" "$PROJECT_MODEL_CACHE_DIR"
     echo
-    # animate_text "Project directory created: $PROJECT_DIR"
 else
     echo
-    # animate_text "Project directory already exists: $PROJECT_DIR"
 fi
 
 USER=$(logname)
@@ -159,22 +140,18 @@ animate_text "▒▓░ Checking for the Latest Components Versions ░▓▒"
 echo
 animate_text "◰ Setup script — version validation"
 
-# --- Update setup script ---
 INSTALLER_UPDATE_URL="https://raw.githubusercontent.com/Fortytwo-Network/fortytwo-console-app/main/linux.sh"
 SCRIPT_PATH="$0"
 TEMP_FILE=$(mktemp)
 
 curl -fsSL -o "$TEMP_FILE" "$INSTALLER_UPDATE_URL"
 
-# Check download
 if [ ! -s "$TEMP_FILE" ]; then
     echo "    ✕ ERROR: Failed to download the update. Check your internet connection and try again."
     exit 1
 fi
 
-# Compare
 if cmp -s "$SCRIPT_PATH" "$TEMP_FILE"; then
-    # No update needed
     echo "    ✓ Up to date"
     rm "$TEMP_FILE"
 else
@@ -189,7 +166,6 @@ else
     echo "    ✕ ERROR: exec failed."
     exit 1
 fi
-# --- End Update setup script ---
 
 CAPSULE_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest")
 animate_text "⎔ Capsule — version $CAPSULE_VERSION"
@@ -197,36 +173,26 @@ DOWNLOAD_CAPSULE_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com
 if [[ -f "$CAPSULE_EXEC" ]]; then
     CURRENT_CAPSULE_VERSION_OUTPUT=$("$CAPSULE_EXEC" --version 2>/dev/null)
     if [[ "$CURRENT_CAPSULE_VERSION_OUTPUT" == *"$CAPSULE_VERSION"* ]]; then
-        animate_text " ✓ Up to date"
+        animate_text "    ✓ Up to date"
     else
-        animate_text " ↳ Updating..."
-        if command -v nvidia-smi &> /dev/null; then
-            animate_text " ↳ NVIDIA detected. Downloading capsule for NVIDIA systems..."
-            DOWNLOAD_CAPSULE_URL="$DOWNLOAD_CAPSULE_URL-cuda124"
-        else
-            animate_text " ↳ No NVIDIA GPU detected. Downloading CPU capsule..."
-        fi
+        animate_text "    ↳ Updating..."
+        animate_text "    ↳ Downloading CPU capsule..."
         curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL"
         chmod +x "$CAPSULE_EXEC"
-        animate_text " ✓ Successfully updated"
+        animate_text "    ✓ Successfully updated"
     fi
 else
-    if command -v nvidia-smi &> /dev/null; then
-        animate_text " ↳ NVIDIA detected. Downloading capsule for NVIDIA systems..."
-        DOWNLOAD_CAPSULE_URL="$DOWNLOAD_CAPSULE_URL-cuda124"
-    else
-        animate_text " ↳ No NVIDIA GPU detected. Downloading CPU capsule..."
-    fi
+    animate_text "    ↳ Downloading CPU capsule..."
     curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL"
     chmod +x "$CAPSULE_EXEC"
-    animate_text " ✓ Installed to: $CAPSULE_EXEC"
+    animate_text "    ✓ Installed to: $CAPSULE_EXEC"
 fi
+
 PROTOCOL_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/latest")
 animate_text "⏃ Protocol Node — version $PROTOCOL_VERSION"
 DOWNLOAD_PROTOCOL_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/v$PROTOCOL_VERSION/FortytwoProtocolNode-linux-amd64"
 if [[ -f "$PROTOCOL_EXEC" ]]; then
     CURRENT_PROTOCOL_VERSION_OUTPUT=$("$PROTOCOL_EXEC" --version 2>/dev/null)
-
     if [[ "$CURRENT_PROTOCOL_VERSION_OUTPUT" == *"$PROTOCOL_VERSION"* ]]; then
         animate_text "    ✓ Up to date"
     else
@@ -241,6 +207,7 @@ else
     chmod +x "$PROTOCOL_EXEC"
     animate_text "    ✓ Installed to: $PROTOCOL_EXEC"
 fi
+
 UTILS_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/utilities/latest")
 animate_text "⨳ Utils — version $UTILS_VERSION"
 DOWNLOAD_UTILS_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com/utilities/v$UTILS_VERSION/FortytwoUtilsLinux"
@@ -326,72 +293,43 @@ else
         animate_text "    ↳ Validating your identity..."
         WALLET_UTILS_EXEC_OUTPUT="$("$UTILS_EXEC" --create-wallet "$ACCOUNT_PRIVATE_KEY_FILE" --drop-code "$INVITE_CODE" 2>&1)"
         UTILS_EXEC_CODE=$?
-
         if [ "$UTILS_EXEC_CODE" -gt 0 ]; then
-            echo "$WALLET_UTILS_EXEC_OUTPUT" | tail -n 1
-            echo
-            echo "˙◠˙ This code has already been activated. Please check your code and try again. You entered: $INVITE_CODE"
-            echo
-            rm -f "$ACCOUNT_PRIVATE_KEY_FILE"
+            echo "$WALLET_UTILS_EXEC_OUTPUT"
+            echo "    ✕ ERROR: Failed to validate activation code. Please check the code and try again."
             exit 1
         fi
-        animate_text "    ↳ Write down your new node identity:"
-        echo "$WALLET_UTILS_EXEC_OUTPUT"
-        ACCOUNT_PRIVATE_KEY=$(<"$ACCOUNT_PRIVATE_KEY_FILE")
-        echo
-        animate_text "    ✓ Identity configured and securely stored!"
-        echo
-        echo -e "╔═════════════════ ATTENTION, NODERUNNER ═════════════════╗"
-        echo -e "║                                                         ║"
-        echo -e "║  1. Write down your secret recovery phrase              ║"
-        echo -e "║  2. Keep your private key safe                          ║"
-        echo -e "║     ↳ Get .account_private_key key from ./FortytwoNode/ ║"
-        echo -e "║     ↳ Store it outside the App directory                ║"
-        echo -e "║                                                         ║"
-        echo -e "║  ⚠ Keep the recovery phrase and private key safe.       ║"
-        echo -e "║  ⚠ Do not share them with anyone.                       ║"
-        echo -e "║  ⚠ Use them to restore your node or access your wallet. ║"
-        echo -e "║  ⚠ We won't be able to recover them if they are lost.   ║"
-        echo -e "║                                                         ║"
-        echo -e "╚═════════════════════════════════════════════════════════╝"
-        echo
-        while true; do
-            read -r -p "To continue, please type 'I wrote down my recovery phrase': " user_input
-            if [ "$user_input" = "I wrote down my recovery phrase" ]; then
-                break
-            fi
-            echo "Incorrect input. Please type 'I wrote down my recovery phrase' to continue."
-        done
+        animate_text "    ✓ Identity created and saved to $PROJECT_DIR/.account_private_key."
+        echo "    ⚠ Keep the key secure. Do not share with anybody."
+        echo "    ⚠ Restore your node or access your wallet with it."
+        echo "    ⚠ We will not be able to recover it would it be lost."
     fi
 fi
+
 echo
 animate_text "▒▓░ The Unique Strength of Your Node ░▓▒"
-echo
 animate_text "Choose how your node will contribute its unique strengths to the collective intelligence."
-echo
 auto_select_model
+
 echo
-animate_text "Use setup assist options [0-1] or pick an option from three model tiers [2-22]:"
-echo
-echo "╔═══════════════════════════════════════════════════════════════════════════╗"
-animate_text_x2 "║ 0 ⌖ AUTO-SELECT - Optimal configuration                                   ║"
-echo "║     Let the system determine the best model for your hardware.            ║"
-echo "║     Balanced for performance and capabilities.                            ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-animate_text_x2 "║ 1 ✶ IMPORT CUSTOM - Advanced configuration                                ║"
-echo "╚═══════════════════════════════════════════════════════════════════════════╝"
+echo -e "╔═══════════════════════════════════════════════════════════════════════════╗"
+echo -e "║ 0 ⌖ AUTO-SELECT - Optimal configuration                                    ║"
+echo -e "║ Let the system determine the best model for your hardware.                 ║"
+echo -e "║ Balanced for performance and capabilities.                                 ║"
+echo -e "╠═══════════════════════════════════════════════════════════════════════════╣"
+echo -e "║ 1 ✶ IMPORT CUSTOM - Advanced configuration                                 ║"
+echo -e "╚═══════════════════════════════════════════════════════════════════════════╝"
 echo
 echo "╔═════════ EXTREME TIER | Models with very high memory requirements"
 animate_text_x2 "║ 2 ⬢ SUPERIOR GENERALIST"
 echo "║     65.9 GB ${MEMORY_TYPE} • GPT-oss 120B Q4"
 echo "║     Frontier-level multi-step answers across coding, math, science,"
 echo "║     general knowledge questions."
-echo "║   "
+echo "║     "
 animate_text_x2 "║ 3 ⬢ SUPERIOR GENERALIST"
 echo "║     76.5 GB ${MEMORY_TYPE} • GLM-4.5-Air Q4"
 echo "║     Deliberate multi-step reasoning in logic, math, and coding;"
 echo "║     excels at clear, long-form breakdowns of complex questions."
-echo "║   "
+echo "║     "
 animate_text_x2 "║ 4 ⬢ SUPERIOR GENERALIST"
 echo "║     31.7 GB ${MEMORY_TYPE} • Nemotron-Super-49B-v1.5 Q4"
 echo "║     High-precision multi-step reasoning in general domains, math and"
@@ -631,6 +569,7 @@ case $NODE_CLASS in
         auto_select_model
         ;;
 esac
+
 echo
 echo "You chose:"
 animate_text "${NODE_NAME}"
@@ -654,14 +593,13 @@ startup() {
             animate_text "Capsule is ready."
             break
         else
-            # Capsule is not ready. Retrying in 5 seconds...
             sleep 5
         fi
         if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
             echo -e "\033[0;31mCapsule process exited (PID: $CAPSULE_PID)\033[0m"
             if [[ -f "$CAPSULE_LOGS" ]]; then
                 tail -n 1 "$CAPSULE_LOGS"
-        fi
+            fi
             exit 1
         fi
     done
