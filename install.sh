@@ -4,7 +4,7 @@ animate_text() {
     local text="$1"
     for ((i=0; i<${#text}; i++)); do
         echo -n "${text:$i:1}"
-        sleep 0.006
+        sleep 0.002
     done
     echo
 }
@@ -18,28 +18,57 @@ animate_text_x2() {
 }
 
 auto_select_model() {
-    # Modified to use CPU RAM instead of VRAM
-    AVAILABLE_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
-    animate_text "    ↳ System analysis: ${AVAILABLE_MEM}GB ${MEMORY_TYPE} detected"
 
-    AVAILABLE_MEM_INT=$(printf "%.0f" "$AVAILABLE_MEM")
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        AVAILABLE_MEM=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null \
+          | awk 'BEGIN{max=0} {g=$1/1024; if(g>max) max=g} END{printf "%.2f", max}')
+        TOTAL_MEM=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null \
+          | awk 'BEGIN{max=0} {g=$1/1024; if(g>max) max=g} END{printf "%.2f", max}')
+    fi
 
-    if [ "$AVAILABLE_MEM_INT" -ge 16 ]; then
-        animate_text "    🜲 Recommending: ⬢ 7 Qwen3 8B for balanced capability"
+    if [[ -z "$AVAILABLE_MEM" || "$AVAILABLE_MEM" == "0.00" ]]; then
+        AVAILABLE_MEM=$(awk '
+            $1=="MemAvailable:" {avail=$2/1024/1024}
+            $1=="MemFree:"      {free=$2}
+            $1=="Buffers:"      {buf=$2}
+            $1=="Cached:"       {cached=$2}
+            $1=="SReclaimable:" {srec=$2}
+            $1=="Shmem:"        {shm=$2}
+            END{
+              if (avail > 0)      printf "%.2f", avail/1.0;
+              else                 printf "%.2f", (free+buf+cached+srec-shm)/1024/1024;
+            }' /proc/meminfo)
+        TOTAL_MEM=$(awk '/MemTotal/ {print $2 / 1024 / 1024}' /proc/meminfo)
+    fi
+
+
+    AVAILABLE_MEM_INT=$(awk -v v="$AVAILABLE_MEM" 'BEGIN{printf "%d", int(v)}')
+
+    animate_text "    ↳ System analysis:"
+    animate_text "    ↳ ${TOTAL_MEM} GB ${MEMORY_TYPE} total, ${AVAILABLE_MEM} GB ${MEMORY_TYPE} available"
+
+    if [ "$AVAILABLE_MEM_INT" -ge 22 ]; then
+        animate_text "    🜲 Recommending: ⬢ 6 Qwen3 for problem solving & coding"
+        LLM_HF_REPO="unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf"
+        NODE_NAME="Qwen3 Coder 30B A3B Instruct Q4"
+    elif [ "$AVAILABLE_MEM_INT" -ge 15 ]; then
+        animate_text "    🜲 Recommending: ⬢ 12 Qwen3 14B for high-precision logical analysis"
+        LLM_HF_REPO="unsloth/Qwen3-14B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-14B-Q4_K_M.gguf"
+        NODE_NAME="Qwen3 14B Q4"
+    elif [ "$AVAILABLE_MEM_INT" -ge 7 ]; then
+        animate_text "    🜲 Recommending: ⬢ 13 Qwen3 8B for balanced capability"
         LLM_HF_REPO="unsloth/Qwen3-8B-GGUF"
         LLM_HF_MODEL_NAME="Qwen3-8B-Q4_K_M.gguf"
         NODE_NAME="Qwen3 8B Q4"
-    elif [ "$AVAILABLE_MEM_INT" -ge 8 ]; then
-        animate_text "    🜲 Recommending: ⬢ 13 Gemma-3 4B intelligence with MULTILINGUAL UNDERSTANDING comprehension"
-        LLM_HF_REPO="unsloth/gemma-3-4b-it-GGUF"
-        LLM_HF_MODEL_NAME="gemma-3-4b-it-Q4_K_M.gguf"
-        NODE_NAME="⬢ MULTILINGUAL UNDERSTANDING: Gemma-3 4B Q4"
     else
-        animate_text "    🜲 Recommending: ⬢ 16 Qwen 3 1.7B optimized for efficiency"
+        animate_text "    🜲 Recommending: ⬢ 22 Qwen3 1.7B optimized for efficiency"
         LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
         LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
-        NODE_NAME="Qwen 3 1.7B Q4"
+        NODE_NAME="Qwen3 1.7B Q4"
     fi
+    animate_text "    ↳ Or pick a model smaller than ${AVAILABLE_MEM} GB"
 }
 
 BANNER="
@@ -68,15 +97,11 @@ BANNER_FULLNAME="
 animate_text_x2 "$BANNER"
 animate_text "      Welcome to ::|| Fortytwo, Noderunner."
 echo
-
-# Modified to bypass NVIDIA GPU check and use CPU mode
-MEMORY_TYPE="RAM"
 if command -v nvidia-smi &> /dev/null; then
-    echo "    ↳ NVIDIA GPU detected, but we'll use CPU mode as requested."
+    MEMORY_TYPE="VRAM"
 else
-    echo "    ↳ No NVIDIA GPU detected. Running in CPU mode."
+    MEMORY_TYPE=" RAM"
 fi
-
 PROJECT_DIR="./FortytwoNode"
 PROJECT_DEBUG_DIR="$PROJECT_DIR/debug"
 PROJECT_MODEL_CACHE_DIR="$PROJECT_DIR/model_cache"
@@ -86,7 +111,6 @@ CAPSULE_LOGS="$PROJECT_DEBUG_DIR/FortytwoCapsule.logs"
 CAPSULE_READY_URL="http://0.0.0.0:42442/ready"
 
 PROTOCOL_EXEC="$PROJECT_DIR/FortytwoProtocol"
-PROTOCOL_DB_DIR="$PROJECT_DEBUG_DIR/internal_db"
 
 ACCOUNT_PRIVATE_KEY_FILE="$PROJECT_DIR/.account_private_key"
 
@@ -112,6 +136,25 @@ if ! command -v curl &> /dev/null; then
     echo
 fi
 
+animate_text "Ξ Connection check to update endpoints"
+
+curl -s --connect-timeout 3 --max-time 5 -o /dev/null "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest"
+CAPSULE_S3_STATUS=$?
+
+curl -s --connect-timeout 3 --max-time 5 -o /dev/null "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/latest"
+PROTOCOL_S3_STATUS=$?
+
+if [ "$CAPSULE_S3_STATUS" -eq 0 ] && [ "$PROTOCOL_S3_STATUS" -eq 0 ]; then
+  echo "    ✓ Connected"
+  echo
+elif [ "$CAPSULE_S3_STATUS" -ne 0 ] && [ "$PROTOCOL_S3_STATUS" -ne 0 ]; then
+  echo "    ✕ ERROR: no connection. Check your internet connection, try using a VPN, and restart the script."
+  exit 1
+else
+  echo "    ✕ ERROR: partial connection failure. Try using a VPN and restart the script."
+  exit 1
+fi
+
 animate_text "▒▓░ Checking for the Latest Components Versions ░▓▒"
 echo
 animate_text "◰ Setup script — version validation"
@@ -129,9 +172,24 @@ if [ ! -s "$TEMP_FILE" ]; then
     exit 1
 fi
 
-# Comment out auto-update to prevent reversion to GPU check
-echo "    ✓ Skipping auto-update to maintain CPU compatibility."
-rm "$TEMP_FILE"
+# Compare
+if cmp -s "$SCRIPT_PATH" "$TEMP_FILE"; then
+    # No update needed
+    echo "    ✓ Up to date"
+    rm "$TEMP_FILE"
+else
+    echo "    ↳ Updating..."
+    cp "$SCRIPT_PATH" "${SCRIPT_PATH}.bak"
+    cp "$TEMP_FILE" "$SCRIPT_PATH"
+    chmod +x "$SCRIPT_PATH"
+    rm "$TEMP_FILE"
+    echo "    ↺ Restarting script..."
+    sleep 3
+    exec "$SCRIPT_PATH" "$@"
+    echo "    ✕ ERROR: exec failed."
+    exit 1
+fi
+# --- End Update setup script ---
 
 CAPSULE_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest")
 animate_text "⎔ Capsule — version $CAPSULE_VERSION"
@@ -142,15 +200,23 @@ if [[ -f "$CAPSULE_EXEC" ]]; then
         animate_text "    ✓ Up to date"
     else
         animate_text "    ↳ Updating..."
-        # Force CPU version download
-        animate_text "    ↳ Downloading CPU capsule..."
+        if command -v nvidia-smi &> /dev/null; then
+            animate_text "    ↳ NVIDIA detected. Downloading capsule for NVIDIA systems..."
+            DOWNLOAD_CAPSULE_URL+="-cuda124"
+        else
+            animate_text "    ↳ No NVIDIA GPU detected. Downloading CPU capsule..."
+        fi
         curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL"
         chmod +x "$CAPSULE_EXEC"
         animate_text "    ✓ Successfully updated"
     fi
 else
-    # Force CPU version download
-    animate_text "    ↳ Downloading CPU capsule..."
+    if command -v nvidia-smi &> /dev/null; then
+        animate_text "    ↳ NVIDIA detected. Downloading capsule for NVIDIA systems..."
+        DOWNLOAD_CAPSULE_URL+="-cuda124"
+    else
+        animate_text "    ↳ No NVIDIA GPU detected. Downloading CPU capsule..."
+    fi
     curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL"
     chmod +x "$CAPSULE_EXEC"
     animate_text "    ✓ Installed to: $CAPSULE_EXEC"
@@ -246,6 +312,7 @@ else
     else
         animate_text "[1] Creating a new identity with an activation code"
         echo
+        "$UTILS_EXEC" --check-drop-service || exit 1
         while true; do
             read -r -p "Enter your activation code: " INVITE_CODE
             echo
@@ -289,22 +356,22 @@ else
         echo -e "╚═════════════════════════════════════════════════════════╝"
         echo
         while true; do
-            read -r -p "To continue, please type 'Done': " user_input
-            if [ "$user_input" = "Done" ]; then
+            read -r -p "To continue, please type 'I wrote down my recovery phrase': " user_input
+            if [ "$user_input" = "I wrote down my recovery phrase" ]; then
                 break
             fi
-            echo "Incorrect input. Please type 'Done' to continue."
+            echo "Incorrect input. Please type 'I wrote down my recovery phrase' to continue."
         done
     fi
 fi
 echo
 animate_text "▒▓░ The Unique Strength of Your Node ░▓▒"
 echo
-animate_text "Each AI node has unique strengths."
-animate_text "Choose how your node will contribute to the collective intelligence:"
-echo 
+animate_text "Choose how your node will contribute its unique strengths to the collective intelligence."
+echo
 auto_select_model
-# echo "    Already downloaded models: ⬢ 4, ⬢ 5"
+echo
+animate_text "Use setup assist options [0-1] or pick an option from three model tiers [2-22]:"
 echo
 echo "╔═══════════════════════════════════════════════════════════════════════════╗"
 animate_text_x2 "║ 0 ⌖ AUTO-SELECT - Optimal configuration                                   ║"
@@ -313,36 +380,121 @@ echo "║     Balanced for performance and capabilities.                        
 echo "╠═══════════════════════════════════════════════════════════════════════════╣"
 animate_text_x2 "║ 1 ✶ IMPORT CUSTOM - Advanced configuration                                ║"
 echo "╚═══════════════════════════════════════════════════════════════════════════╝"
-# animate_text_x2 "║ 2 ↺ LAST USED - Run the model that was run the last time                ║"
-echo "               LIGHT TIER | CPU Operating the Node Optimizec                 "
-echo "╔═══════════════════════════════════════════════════════════════════════════╗"
-
-animate_text_x2 "║ 7 ⬢ GENERAL KNOWLEDGE                            Qwen3 8B Q4 • 5.1GB ${MEMORY_TYPE} ║"
-echo "║     Versatile multi-domain intelligence core with balanced capabilities.  ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-animate_text_x2 "║ 10 ⬢ MATH & CODE                               MiMo 7B RL Q4 • 5.1GB ${MEMORY_TYPE} ║"
-echo "║     Solves math and logic problems effectively,                           ║"
-echo "║     with strong performance in structured reasoning and code tasks.       ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-animate_text_x2 "║ 12 ⬢ THEOREM PROVER                 DeepSeek-Prover V2 7B Q4 • 4.3GB ${MEMORY_TYPE} ║"
-echo "║     Expert in formal logic and proof solving,                             ║"
-echo "║     perfect for mathematics, theorem work, and structured reasoning tasks.║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-animate_text_x2 "║ 13 ⬢ MULTILINGUAL UNDERSTANDING                Gemma-3 4B Q4 • 2.6GB ${MEMORY_TYPE} ║"
-echo "║     Balanced intelligence with high-quality cross-lingual comprehension,  ║"
-echo "║     translation and multilingual reasoning.                               ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-animate_text_x2 "║ 15 ⬢ PROGRAMMING & ALGORITHMS             OlympicCoder 7B Q6 • 6.3GB ${MEMORY_TYPE} ║"
-echo "║     Optimized for symbolic reasoning, step-by-step math solutions         ║"
-echo "║     and logic-based inference.                                            ║"
-echo "╠═══════════════════════════════════════════════════════════════════════════╣"
-animate_text_x2 "║ 16 ⬢ LOW MEMORY MODEL                          Qwen3 1.7B Q4 • 1.2GB ${MEMORY_TYPE} ║"
-echo "║     Ultra-efficient for resource-constrained environments,                ║"
-echo "║     providing basic instruction-following and reasoning functionalities.  ║"
-echo "╚═══════════════════════════════════════════════════════════════════════════╝"
 echo
+echo "╔═════════ EXTREME TIER | Models with very high memory requirements"
+animate_text_x2 "║ 2 ⬢ SUPERIOR GENERALIST"
+echo "║     65.9 GB ${MEMORY_TYPE} • GPT-oss 120B Q4"
+echo "║     Frontier-level multi-step answers across coding, math, science,"
+echo "║     general knowledge questions."
+echo "║   "
+animate_text_x2 "║ 3 ⬢ SUPERIOR GENERALIST"
+echo "║     76.5 GB ${MEMORY_TYPE} • GLM-4.5-Air Q4"
+echo "║     Deliberate multi-step reasoning in logic, math, and coding;"
+echo "║     excels at clear, long-form breakdowns of complex questions."
+echo "║   "
+animate_text_x2 "║ 4 ⬢ SUPERIOR GENERALIST"
+echo "║     31.7 GB ${MEMORY_TYPE} • Nemotron-Super-49B-v1.5 Q4"
+echo "║     High-precision multi-step reasoning in general domains, math and"
+echo "║     coding; produces clear step-by-step solutions to complex problems."
+echo "╚═════════ EXTREME TIER END"
+echo
+echo "╔═════════ HEAVY TIER | Dedicating all Compute to the Node"
+animate_text_x2 "║ 5 ⬢ ADVANCED REASONING"
+echo "║     19.5 GB ${MEMORY_TYPE} • Qwen3 30B A3B Thinking 2507 Q4"
+echo "║     Long-context reasoning at high efficiency, with steady logic,"
+echo "║     math, and coding across large inputs."
+echo "║     "
+animate_text_x2 "║ 6 ⬢ PROGRAMMING & ALGORITHMS"
+echo "║     19.5 GB ${MEMORY_TYPE} • Qwen3-Coder-30B-A3B-Instruct Q4"
+echo "║     Writes robust, well-structured code with step-by-step reasoning;"
+echo "║     handles large, multi-file tasks and refactors."
+echo "║     "
+animate_text_x2 "║ 7 ⬢ ADVANCED GENERALIST"
+echo "║     12.2 GB ${MEMORY_TYPE} • gpt-oss-20b Q4"
+echo "║     Fast, capable multi-domain reasoning;"
+echo "║     solid for day-to-day coding, math, and research."
+echo "║     "
+animate_text_x2 "║ 8 ⬢ MATH, SCIENCE & CODING"
+echo "║     20.9 GB ${MEMORY_TYPE} • OpenReasoning Nemotron 32B Q4"
+echo "║     Meticulous step-by-step logic in math, science and code;"
+echo "║     great for explainable solutions and error analysis."
+echo "║     "
+animate_text_x2 "║ 9 ⬢ ADVANCED GENERALIST"
+echo "║     20.3 GB ${MEMORY_TYPE} • EXAONE 4.0 32B Q4"
+echo "║     Strong science and world knowledge with dependable math and coding;"
+echo "║     clear, well-grounded explanations."
+echo "║     "
+animate_text_x2 "║ 10 ⬢ PROGRAMMING & ALGORITHMS"
+echo "║     20.9 GB ${MEMORY_TYPE} • OlympicCoder 32B Q4"
+echo "║     Excels at contest-style algorithms;"
+echo "║     produces correct, efficient code with clear step-by-step reasoning."
+echo "║     "
+animate_text_x2 "║ 11 ⬢ ADVANCED REASONING"
+echo "║     9.6 GB ${MEMORY_TYPE} • Apriel-Nemotron-15b-Thinker Q4"
+echo "║     Deliberate, reflective multi-step reasoning across mixed tasks;"
+echo "║     steady performance on logic, math, and coding."
+echo "╚═════════ HEAVY TIER END"
+echo
+echo "╔═════════ LIGHT TIER | Operating the Node in Background"
+animate_text_x2 "║ 12 ⬢ EVERYDAY GENERALIST"
+echo "║     9.6 GB ${MEMORY_TYPE} • Qwen3 14B Q4"
+echo "║     Balanced everyday reasoning with multilingual support;"
+echo "║     clear, reliable answers across common topics."
+echo "║     "
+animate_text_x2 "║ 13 ⬢ EVERYDAY GENERALIST"
+echo "║     5.4 GB ${MEMORY_TYPE} • Qwen3 8B Q4"
+echo "║     Smooth daily Q&A with concise reasoning;"
+echo "║     dependable on summaries, explanations, and light code."
+echo "║     "
+animate_text_x2 "║ 14 ⬢ MULTILINGUAL GENERALIST"
+echo "║     7.7 GB ${MEMORY_TYPE}  • Gemma-3 4B Q4"
+echo "║     Multilingual chat with long-context support;"
+echo "║     dependable everyday assistant with clear explanations."
+echo "║     "
+animate_text_x2 "║ 15 ⬢ PROGRAMMING & ALGORITHMS"
+echo "║     9.3 GB ${MEMORY_TYPE}  • DeepCoder 14B Q4"
+echo "║     Generates accurate code and understands complex programming logic;"
+echo "║     reliable for feature drafts and fixes."
+echo "║     "
+animate_text_x2 "║ 16 ⬢ PROGRAMMING & ALGORITHMS"
+echo "║     4.8 GB ${MEMORY_TYPE}  • OlympicCoder 7B Q4"
+echo "║     Balanced coding contest solver;"
+echo "║     step-by-step algorithmic reasoning and efficient code."
+echo "║     "
+animate_text_x2 "║ 17 ⬢ MATH & FORMAL LOGIC"
+echo "║     9.3 GB ${MEMORY_TYPE}  • OpenMath-Nemotron 14B Q4"
+echo "║     Excels at math questions and structured problem-solving;"
+echo "║     clear steps for academic and competition problems."
+echo "║     "
+animate_text_x2 "║ 18 ⬢ MATH & CODING"
+echo "║     4.9 GB ${MEMORY_TYPE}  • AceReason-Nemotron-1.1-7B Q4"
+echo "║     Handles math and logic puzzles with minimal resources;"
+echo "║     concise, step-by-step solutions."
+echo "║     "
+animate_text_x2 "║ 19 ⬢ THEOREM PROVER"
+echo "║     5.4 GB ${MEMORY_TYPE}  • Kimina Prover Distill 8B Q4"
+echo "║     Specialist in formal logic and proof steps;"
+echo "║     ideal for theorem-style tasks and verification."
+echo "║     "
+animate_text_x2 "║ 20 ⬢ RUST PROGRAMMING"
+echo "║     4.9 GB ${MEMORY_TYPE}  • Tessa-Rust-T1 7B Q4"
+echo "║     Focused on Rust programming; produces idiomatic Rust and"
+echo "║     helps with code generation, fixes and refactors."
+echo "║     "
+animate_text_x2 "║ 21 ⬢ MEDICAL EXPERT"
+echo "║     5.4 GB ${MEMORY_TYPE}  • II-Medical-8B Q5"
+echo "║     Works through clinical Q&A step by step;"
+echo "║     useful for study and drafting (non-diagnostic)."
+echo "║     "
+animate_text_x2 "║ 22 ⬢ LOW MEMORY MODEL"
+echo "║     1.3 GB ${MEMORY_TYPE}  • Qwen3 1.7B Q4"
+echo "║     Ultra-efficient for basic instructions and quick answers;"
+echo "║     suitable for nodes with tight memory."
+echo "╚═════════ LIGHT TIER END"
+echo
+echo "[0] Auto, [1] Import, [2-22] Specialized Model"
 
-read -r -p "Select your node's specialization [0-16] (0 for auto-select): " NODE_CLASS
+read -r -p "Select your node's specialization option: " NODE_CLASS
 
 case $NODE_CLASS in
     0)
@@ -358,32 +510,107 @@ case $NODE_CLASS in
         read -r -p "Enter model filename (e.g., qwen2.5-3b-instruct-q4_k_m.gguf): " LLM_HF_MODEL_NAME
         NODE_NAME="✶ CUSTOM IMPORT: HuggingFace ${LLM_HF_REPO##*/}"
         ;;
+    2)
+        LLM_HF_REPO="unsloth/gpt-oss-120b-GGUF"
+        LLM_HF_MODEL_NAME="Q4_K_M/gpt-oss-120b-Q4_K_M-00001-of-00002.gguf"
+        NODE_NAME="⬢ SUPERIOR GENERALIST: gpt-oss-120b Q4"
+        ;;
+    3)
+        LLM_HF_REPO="unsloth/GLM-4.5-Air-GGUF"
+        LLM_HF_MODEL_NAME="Q4_K_M/GLM-4.5-Air-Q4_K_M-00001-of-00002.gguf"
+        NODE_NAME="⬢ SUPERIOR GENERALIST: GLM-4.5-Air Q4"
+        ;;
+    4)
+        LLM_HF_REPO="unsloth/Llama-3_3-Nemotron-Super-49B-v1_5-GGUF"
+        LLM_HF_MODEL_NAME="Llama-3_3-Nemotron-Super-49B-v1_5-Q4_K_M.gguf"
+        NODE_NAME="⬢ SUPERIOR GENERALIST: Nemotron-Super-49B-v1.5 Q4"
+        ;;
+    5)
+        LLM_HF_REPO="unsloth/Qwen3-30B-A3B-Thinking-2507-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-30B-A3B-Thinking-2507-Q4_K_M.gguf"
+        NODE_NAME="⬢ ADVANCED REASONING: Qwen3 30B A3B Thinking 2507 Q4"
+        ;;
+    6)
+        LLM_HF_REPO="unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf"
+        NODE_NAME="⬢ PROGRAMMING & ALGORITHMS: Qwen3-Coder-30B-A3B-Instruct Q4"
+        ;;
     7)
-        LLM_HF_REPO="unsloth/Qwen3-8B-GGUF"
-        LLM_HF_MODEL_NAME="Qwen3-8B-Q4_K_M.gguf"
-        NODE_NAME="⬢ GENERAL KNOWLEDGE: Qwen3 8B Q4"
+        LLM_HF_REPO="unsloth/gpt-oss-20b-GGUF"
+        LLM_HF_MODEL_NAME="gpt-oss-20b-Q4_K_M.gguf"
+        NODE_NAME="⬢ ADVANCED GENERALIST: gpt-oss-20b Q4"
+        ;;
+    8)
+        LLM_HF_REPO="unsloth/OpenReasoning-Nemotron-32B-GGUF"
+        LLM_HF_MODEL_NAME="OpenReasoning-Nemotron-32B-Q4_K_M.gguf"
+        NODE_NAME="⬢ MATH, SCIENCE & CODING: OpenReasoning Nemotron 32B Q4"
+        ;;
+    9)
+        LLM_HF_REPO="LGAI-EXAONE/EXAONE-4.0-32B-GGUF"
+        LLM_HF_MODEL_NAME="LGAI-EXAONE_EXAONE-4.0-32B-Q4_K_M.gguf"
+        NODE_NAME="⬢ ADVANCED GENERALIST: EXAONE 4.0 32B Q4"
         ;;
     10)
-        LLM_HF_REPO="jedisct1/MiMo-7B-RL-GGUF"
-        LLM_HF_MODEL_NAME="MiMo-7B-RL-Q4_K_M.gguf"
-        NODE_NAME="⬢ MATH & CODE: MiMo 7B RL Q4"
+        LLM_HF_REPO="bartowski/open-r1_OlympicCoder-32B-GGUF"
+        LLM_HF_MODEL_NAME="open-r1_OlympicCoder-32B-Q4_K_M.gguf"
+        NODE_NAME="⬢ PROGRAMMING & ALGORITHMS: OlympicCoder 32B Q4"
+        ;;
+    11)
+        LLM_HF_REPO="bartowski/ServiceNow-AI_Apriel-Nemotron-15b-Thinker-GGUF"
+        LLM_HF_MODEL_NAME="ServiceNow-AI_Apriel-Nemotron-15b-Thinker-Q4_K_M.gguf"
+        NODE_NAME="⬢ ADVANCED REASONING: Apriel-Nemotron-15b-Thinker Q4"
         ;;
     12)
-        LLM_HF_REPO="irmma/DeepSeek-Prover-V2-7B-Q4_K_M-GGUF"
-        LLM_HF_MODEL_NAME="deepseek-prover-v2-7b-q4_k_m-imat.gguf"
-        NODE_NAME="⬢ THEOREM PROVER: DeepSeek-Prover V2 7B Q4"
+        LLM_HF_REPO="unsloth/Qwen3-14B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-14B-Q4_K_M.gguf"
+        NODE_NAME="⬢ EVERYDAY GENERALIST: Qwen3 14B Q4"
         ;;
     13)
-        LLM_HF_REPO="unsloth/gemma-3-4b-it-GGUF"
-        LLM_HF_MODEL_NAME="gemma-3-4b-it-Q4_K_M.gguf"
-        NODE_NAME="⬢ MULTILINGUAL UNDERSTANDING: Gemma-3 4B Q4"
+        LLM_HF_REPO="unsloth/Qwen3-8B-GGUF"
+        LLM_HF_MODEL_NAME="Qwen3-8B-Q4_K_M.gguf"
+        NODE_NAME="⬢ EVERYDAY GENERALIST: Qwen3 8B Q4"
+        ;;
+    14)
+        LLM_HF_REPO="unsloth/gemma-3-12b-it-GGUF"
+        LLM_HF_MODEL_NAME="gemma-3-12b-it-Q4_K_M.gguf"
+        NODE_NAME="⬢ MULTILINGUAL GENERALIST: Gemma-3 4B Q4"
         ;;
     15)
-        LLM_HF_REPO="bartowski/open-r1_OlympicCoder-7B-GGUF"
-        LLM_HF_MODEL_NAME="open-r1_OlympicCoder-7B-Q4_K_M.gguf"
-        NODE_NAME="⬢ PROGRAMMING & ALGORITHMS: OlympicCoder 7B Q6"
+        LLM_HF_REPO="bartowski/agentica-org_DeepCoder-14B-Preview-GGUF"
+        LLM_HF_MODEL_NAME="agentica-org_DeepCoder-14B-Preview-Q4_K_M.gguf"
+        NODE_NAME="⬢ PROGRAMMING & ALGORITHMS: DeepCoder 14B Q4"
         ;;
     16)
+        LLM_HF_REPO="bartowski/open-r1_OlympicCoder-7B-GGUF"
+        LLM_HF_MODEL_NAME="open-r1_OlympicCoder-7B-Q4_K_M.gguf"
+        NODE_NAME="⬢ PROGRAMMING & ALGORITHMS: OlympicCoder 7B Q4"
+        ;;
+    17)
+        LLM_HF_REPO="bartowski/nvidia_OpenMath-Nemotron-14B-GGUF"
+        LLM_HF_MODEL_NAME="nvidia_OpenMath-Nemotron-14B-Q4_K_M.gguf"
+        NODE_NAME="⬢ MATH & FORMAL LOGIC: OpenMath-Nemotron 14B Q4"
+        ;;
+    18)
+        LLM_HF_REPO="bartowski/nvidia_AceReason-Nemotron-1.1-7B-GGUF"
+        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-Q4_K_M.gguf"
+        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B Q4"
+        ;;
+    19)
+        LLM_HF_REPO="mradermacher/Kimina-Prover-Distill-8B-GGUF"
+        LLM_HF_MODEL_NAME="Kimina-Prover-Distill-8B.Q4_K_M.gguf"
+        NODE_NAME="⬢ THEOREM PROVER: Kimina Prover Distill 8B Q4"
+        ;;
+    20)
+        LLM_HF_REPO="bartowski/Tesslate_Tessa-Rust-T1-7B-GGUF"
+        LLM_HF_MODEL_NAME="Tesslate_Tessa-Rust-T1-7B-Q4_K_M.gguf"
+        NODE_NAME="⬢ RUST PROGRAMMING: Tessa-Rust-T1 7B Q4"
+        ;;
+    21)
+        LLM_HF_REPO="Intelligent-Internet/II-Medical-8B-1706-GGUF"
+        LLM_HF_MODEL_NAME="II-Medical-8B-1706.Q4_K_M.gguf"
+        NODE_NAME="⬢ MEDICAL EXPERT: II-Medical-8B Q5"
+        ;;
+    22)
         LLM_HF_REPO="unsloth/Qwen3-1.7B-GGUF"
         LLM_HF_MODEL_NAME="Qwen3-1.7B-Q4_K_M.gguf"
         NODE_NAME="⬢ LOW MEMORY MODEL: Qwen3 1.7B Q4"
@@ -401,12 +628,11 @@ animate_text "    ↳ Downloading the model and preparing the environment may ta
 "$UTILS_EXEC" --hf-repo "$LLM_HF_REPO" --hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR"
 echo
 animate_text "Setup completed. Ready to launch."
-
+# clear
 animate_text_x2 "$BANNER_FULLNAME"
 
 startup() {
     animate_text "⎔ Starting Capsule..."
-    # Modified to explicitly specify CPU mode
     "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" --llm-hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR" > "$CAPSULE_LOGS" 2>&1 &
     CAPSULE_PID=$!
 
@@ -423,8 +649,8 @@ startup() {
         if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
             echo -e "\033[0;31mCapsule process exited (PID: $CAPSULE_PID)\033[0m"
             if [[ -f "$CAPSULE_LOGS" ]]; then
-                tail -n 20 "$CAPSULE_LOGS"  # Show more log lines for debugging
-            fi
+                tail -n 1 "$CAPSULE_LOGS"
+        fi
             exit 1
         fi
     done
@@ -432,7 +658,7 @@ startup() {
     echo
     animate_text "Joining ::||"
     echo
-    "$PROTOCOL_EXEC" --account-private-key "$ACCOUNT_PRIVATE_KEY" --db-folder "$PROTOCOL_DB_DIR" &
+    "$PROTOCOL_EXEC" --account-private-key "$ACCOUNT_PRIVATE_KEY" &
     PROTOCOL_PID=$!
 }
 
@@ -457,12 +683,26 @@ trap cleanup SIGINT SIGTERM SIGHUP EXIT
 while true; do
     IS_ALIVE="true"
     if ! ps -p "$CAPSULE_PID" > /dev/null; then
-        echo "Capsule has stopped. Restarting..."
+        wait "$CAPSULE_PID"
+        CAPSULE_EXIT_CODE=$?
+        animate_text "Capsule has stopped with exit code: $CAPSULE_EXIT_CODE"
         IS_ALIVE="false"
     fi
 
     if ! ps -p "$PROTOCOL_PID" > /dev/null; then
-        echo "Node has stopped. Restarting..."
+        wait "$PROTOCOL_PID"
+        PROTOCOL_EXIT_CODE=$?
+        animate_text "Node has stopped with exit code: $PROTOCOL_EXIT_CODE"
+        if [ "$PROTOCOL_EXIT_CODE" -eq 20 ]; then
+            animate_text "New protocol version is available!"
+            PROTOCOL_VERSION=$(curl -s "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/latest")
+            animate_text "⏃ Protocol Node — version $PROTOCOL_VERSION"
+            DOWNLOAD_PROTOCOL_URL="https://fortytwo-network-public.s3.us-east-2.amazonaws.com/protocol/v$PROTOCOL_VERSION/FortytwoProtocolNode-linux-amd64"
+            animate_text "    ↳ Updating..."
+            curl -L -o "$PROTOCOL_EXEC" "$DOWNLOAD_PROTOCOL_URL"
+            chmod +x "$PROTOCOL_EXEC"
+            animate_text "    ✓ Successfully updated"
+        fi
         IS_ALIVE="false"
     fi
 
