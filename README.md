@@ -25,10 +25,10 @@ Key Bot Features:
 ```bash
 sudo apt update && sudo apt upgrade -y \
 sudo apt install -y \
-automake autoconf bsdmainutils build-essential clang curl \
+automake autoconf build-essential clang curl \
 gcc git htop iptables jq libatomic1 libblas3 libclang-dev \
 libgbm1 liblapack3 liblapack-dev libleveldb-dev libomp-dev \
-libopenblas-dev libopenmpi-dev libssl-dev lz4 make nano \
+libopenblas-dev libgomp1 libopenmpi-dev libssl-dev lz4 make nano \
 ncdu ninja-build nvme-cli ocl-icd-opencl-dev pkg-config \
 python3-pip screen tar tmux unzip wget
 ```
