@@ -429,10 +429,10 @@ echo "║     1.3 GB ${MEMORY_TYPE} • Qwen3 1.7B Q4"
 echo "║     Ultra-efficient for basic instructions and quick answers;"
 echo "║     suitable for nodes with tight memory."
 echo "║     "
-animate_text_x2 "║ 23 ⬢ MATH & CODING (ULTRA LOW MEMORY)"
-echo "║     2.8 GB ${MEMORY_TYPE} • AceReason-Nemotron-1.1-7B IQ2 Medium"
-echo "║     Ultra-optimized for low memory; handles math and logic puzzles;"
-echo "║     concise, step-by-step solutions."
+animate_text_x2 "║ 23 ⬢ MATH EQUATIONS & REASONING"
+echo "║     1.2 GB ${MEMORY_TYPE} • Palmyra-Mini-Thinking-B 1.78B Q5"
+echo "║     Ultra-optimized for low memory; Another specialized variant;"
+echo "║     that excels at mathematical equations and reasoning."
 echo "║     "
 echo "╚═════════ LIGHT TIER END"
 echo
@@ -560,9 +560,9 @@ case $NODE_CLASS in
         NODE_NAME="⬢ LOW MEMORY MODEL: Qwen3 1.7B Q4"
         ;;
     23)
-        LLM_HF_REPO="bartowski/nvidia_AceReason-Nemotron-1.1-7B-GGUF"
-        LLM_HF_MODEL_NAME="nvidia_AceReason-Nemotron-1.1-7B-IQ2_M.gguf"
-        NODE_NAME="⬢ MATH & CODING: AceReason-Nemotron-1.1-7B IQ2 Medium"
+        LLM_HF_REPO="prithivMLmods/palmyra-mini-thinking-AIO-GGUF"
+        LLM_HF_MODEL_NAME="palmyra-mini-thinking-b.Q5_K_M.gguf"
+        NODE_NAME="⬢ MATH EQUATIONS & REASONING: Palmyra-Mini-Thinking-B 1.78B Q5"
         ;;
     *)
         animate_text "No selection made. Continuing with [0] ⌖ AUTO-SELECT..."
