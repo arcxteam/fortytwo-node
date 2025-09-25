@@ -4,7 +4,7 @@ This repository contains installation instructions and helper scripts for settin
 
 ## 🚀 Installation Depedency & Update
 
-```
+```bash
 sudo apt update && sudo apt upgrade -y \
 sudo apt install -y \
 automake autoconf bsdmainutils build-essential clang curl \
@@ -21,12 +21,13 @@ git clone https://github.com/arcxteam/fortytwo-node.git
 ```
 
 ### Create a screen session
-```
+```bash
 screen -S fortytwo
 ```
-```
+
+```bash
 cd fortytwo-node
-chmod +x install.sh && ./install.sh
+chmod +x linux.sh && ./linux.sh
 ```
 
 <img width="1475" height="230" alt="image-08-07-2025_03_17_PM" src="https://github.com/user-attachments/assets/ae265d85-4825-4ec8-9761-02750c89b394" />
@@ -61,7 +62,14 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 2. **Rerun Script**:
    ```bash
    cd ~/Fortytwo/fortytwo-console-app-main
-   ./linux.sh
+   chmod +x linux.sh && ./linux.sh
+   ```
+
+3. **Custom Model no.23**
+   ```bash
+   LLM_HF_REPO="prithivMLmods/palmyra-mini-thinking-AIO-GGUF"
+   LLM_HF_MODEL_NAME="palmyra-mini-thinking-b.Q5_K_M.gguf"
+   NODE_NAME="⬢ MATH EQUATIONS & REASONING: Palmyra-Mini-Thinking-B 1.78B Q5"
    ```
 
 ### Notes
