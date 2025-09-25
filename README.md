@@ -1,8 +1,26 @@
-# FortyTwo Network Node
+# Fortytwo Node Operator For Inference With CPU Mode
 
 This repository contains installation instructions and helper scripts for setting up the FortyTwo Network console application on Linux systems.
 
-## 🚀 Installation Depedency & Update
+## Get Realtime Node by Telegram Bot
+
+Tool monitoring FortyTwo node operator in performs swarm model inference! Get a detail dashboard ranking, received token, daily report & tracking any transaction FOR 42Tokens in participant network
+
+> Get bot here... https://greyscope.xyz/x/fortytwo 
+
+Key Bot Features:
+▪ Get real-time performs using etherscan APIs
+▪ Get binding wallet maxi 2 EOA wallet address
+▪ Get amount balances in MONAD, FOR 42Token and recent activity
+▪ Get dashboard insights : Rank, Name, Win Rate, Rounds Won, Activity and Rewards
+▪ Get notifications received FOR 42Token transactions
+▪ Get notifications summary FOR daily accumulated token
+
+Enjoy!! FOR swarm inferences
+
+## Guides Install
+
+### Update Services & Depedency
 
 ```bash
 sudo apt update && sudo apt upgrade -y \
@@ -29,17 +47,17 @@ cd fortytwo-console-app-main
 rm linux.sh
 ```
 
-### Download P2P a Peers Network (optional)
+### Use P2P a Peers Network (optional)
 ```bash
 wget https://github.com/arcxteam/fortytwo-node/.p2p_known_peers.json
 ```
 
-### Redirect installation script or Cloning this
+### Redirect installation script or Cloning repo
 ```bash
 wget https://github.com/arcxteam/fortytwo-node/linux.sh
 ```
 
-### Create a screen session
+### Create a screen & Running Operator
 ```bash
 screen -S fortytwo
 ```
