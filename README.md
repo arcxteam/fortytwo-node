@@ -1,24 +1,24 @@
 # Fortytwo Node Operator For Inference With CPU Mode
 
-This repository contains installation instructions and helper scripts for setting up the FortyTwo Network console application on Linux systems.
+![banner](fortytwo.gif)
 
-## Get Realtime Node by Telegram Bot
+This repository contains installation instructions and helper scripts for setting up the FortyTwo Network console application on Linux systems
 
-Tool monitoring FortyTwo node operator in performs swarm model inference! Get a detail dashboard ranking, received token, daily report & tracking any transaction FOR 42Tokens in participant network
+## 1. Get Realtime Node by Telegram Bot
 
-> Get bot here... https://greyscope.xyz/x/fortytwo 
+Use tool-bot monitoring FortyTwo node operator in performs swarm model inference! Get a detail dashboard ranking, received token, daily report & tracking any transaction FOR 42Tokens in participant network
+
+> **Got bot here...** https://greyscope.xyz/x/fortytwo
 
 Key Bot Features:
-▪ Get real-time performs using etherscan APIs
-▪ Get binding wallet maxi 2 EOA wallet address
-▪ Get amount balances in MONAD, FOR 42Token and recent activity
-▪ Get dashboard insights : Rank, Name, Win Rate, Rounds Won, Activity and Rewards
-▪ Get notifications received FOR 42Token transactions
-▪ Get notifications summary FOR daily accumulated token
+ - Get real-time performs using etherscan APIs
+ - Get binding wallet maximum 2 EOA wallet address
+ - Get amount balances in MONAD, FOR 42Token and recent activity
+ - Get dashboard insights : Rank, Name, Win Rate, Rounds Won, Activity and Rewards
+ - Get notifications received FOR 42Token transactions
+ - Get notifications summary FOR daily accumulated token
 
-Enjoy!! FOR swarm inferences
-
-## Guides Install
+## 2. Installing Setup Node
 
 ### Update Services & Depedency
 
@@ -65,21 +65,27 @@ screen -S fortytwo
 ```bash
 chmod +x linux.sh && ./linux.sh
 ```
-
-<img width="1475" height="230" alt="image-08-07-2025_03_17_PM" src="https://github.com/user-attachments/assets/ae265d85-4825-4ec8-9761-02750c89b394" />
-
-
-<img width="1530" height="800" alt="Desktop-screenshot-08-07-2025_02_53_PM" src="https://github.com/user-attachments/assets/ca9e6b1f-16a9-4315-98a8-269ec9eef1f6" />
-
-After installation, the FortyTwo console application will be ready to use.
+- Back to main root ~/ `Ctrl + A + D`
 
 ```
-screen -ls
+# back to screen
 screen -r fortytwo
 ```
 
+> Note; After installation, the FortyTwo console application will be ready to use. **If you can't get received 42T after a few minutes or hourly..check logs if get like here**
 
-### Error Cause
+- INFO Request 41d89c4b5b394015179749b91b525a75d6327cb049f5aa3239caa2dd3dae569d <mark>has too short deadline to fit. Required speed: 0.001164882414882415. Max: 0.001</mark>
+- INFO Remaining join duration for Inference Join state: 4982 ms
+- INFO Request d06dc0566a9fac84ab6539b7554f6605c593962fe2365cbc84918efbf06a4b11 <mark>has too short deadline to fit. Required speed: 0.001233404909875498. Max: 0.001</mark>
+
+#### Solutions
+- Ur server need faster for complete any Task Inference
+- Need activate on AVX2 or use another low LLModel visit the Huggingface
+- List LLModel check here https://github.com/arcxteam/fortytwo-node/blob/main/llmodel.py
+
+---
+
+## Error Cause & Custom LLModel
 The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which requires CUDA libraries (`libcuda.so.1`). On CPU-only servers without NVIDIA drivers, this library is missing, causing the load failure.
 
 ### Why It Happened
@@ -98,10 +104,20 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 2. **Rerun Script**:
    ```bash
    cd ~/Fortytwo/fortytwo-console-app-main
+   rm linux.sh
+   wget https://github.com/arcxteam/fortytwo-node/linux.sh
    chmod +x linux.sh && ./linux.sh
    ```
 
-3. **Another my Custom Model no.23**
+3. **Another my Custom Model No.23**
+   - Costum model by import `select 1`
+   - Need use `LLM_HF_REPO` and `LLM_HF_MODEL_NAME`
+   - Visit `Huggingface`
+   - Check file repo model need suppport parameter key is `GGUF`
+   - Select low LLModel as medium 1GB-3GB use `Q5_K_M` or `Q4_K_M` or `Q3_K_M`
+   
+   Example my custom LLModel
+
    ```bash
    LLM_HF_REPO="prithivMLmods/palmyra-mini-thinking-AIO-GGUF"
    LLM_HF_MODEL_NAME="palmyra-mini-thinking-b.Q5_K_M.gguf"
