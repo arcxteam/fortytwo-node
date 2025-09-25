@@ -15,9 +15,28 @@ ncdu ninja-build nvme-cli ocl-icd-opencl-dev pkg-config \
 python3-pip screen tar tmux unzip wget
 ```
 
-### Cloning - Download and install the FortyTwo
+### Create Folder
 ```bash
-git clone https://github.com/arcxteam/fortytwo-node.git
+mkdir -p ~/Fortytwo && cd ~/Fortytwo
+```
+
+### Download Execute by Officially
+```bash
+curl -L -o fortytwo-console-app.zip https://github.com/Fortytwo-Network/fortytwo-console-app/archive/refs/heads/main.zip
+unzip fortytwo-console-app.zip
+cd fortytwo-console-app-main
+# will delete official script linux.sh
+rm linux.sh
+```
+
+### Download P2P a Peers Network (optional)
+```bash
+wget https://github.com/arcxteam/fortytwo-node/.p2p_known_peers.json
+```
+
+### Redirect installation script or Cloning this
+```bash
+wget https://github.com/arcxteam/fortytwo-node/linux.sh
 ```
 
 ### Create a screen session
@@ -26,7 +45,6 @@ screen -S fortytwo
 ```
 
 ```bash
-cd fortytwo-node
 chmod +x linux.sh && ./linux.sh
 ```
 
@@ -65,7 +83,7 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
    chmod +x linux.sh && ./linux.sh
    ```
 
-3. **Custom Model no.23**
+3. **Another my Custom Model no.23**
    ```bash
    LLM_HF_REPO="prithivMLmods/palmyra-mini-thinking-AIO-GGUF"
    LLM_HF_MODEL_NAME="palmyra-mini-thinking-b.Q5_K_M.gguf"
