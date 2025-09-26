@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Low-Parameter LLM GGUF Models</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'JetBrains Mono', monospace;
             background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
             color: #e0e0e0;
             margin: 0;
@@ -19,6 +20,7 @@
             color: #00ff88;
             text-shadow: 0 0 10px #00ff88;
             margin-bottom: 30px;
+            font-weight: 700;
         }
         .container {
             max-width: 900px;
@@ -55,7 +57,7 @@
             border-radius: 3px;
             cursor: pointer;
             color: #0a0a0a;
-            font-weight: bold;
+            font-weight: 500;
             margin-left: 5px;
         }
         .copy-btn:hover {
@@ -65,7 +67,7 @@
             color: #00ff88;
             margin-left: 10px;
             display: none;
-            font-weight: bold;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -73,226 +75,306 @@
     <div class="container">
         <h1>Low-Parameter LLM GGUF Models for Text, Coding & Math</h1>
         <ul class="model-list">
-            <!-- Palmyra-Mini-Thinking-B (Your Previous Model) -->
+            <!-- Model 1: Palmyra-Mini-Thinking-B -->
             <li class="model-item">
-                <strong>Model 22.5</strong>
+                <strong>Model 1</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ MATH EQUATIONS & REASONING: Palmyra-Mini-Thinking-B 1.78B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo22.5">prithivMLmods/palmyra-mini-thinking-AIO-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo22.5')">Copy</button>
-                        <span class="copied" id="copied22.5">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo1">prithivMLmods/palmyra-mini-thinking-AIO-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo1')">Copy</button>
+                        <span class="copied" id="copied1">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model22.5">palmyra-mini-thinking-b.Q5_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model22.5')">Copy</button>
-                        <span class="copied" id="copiedModel22.5">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model1">palmyra-mini-thinking-b.Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model1')">Copy</button>
+                        <span class="copied" id="copiedModel1">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Palmyra-Mini-Thinking-A Q4 (Added as Requested) -->
+            <!-- Model 2: Palmyra-Mini-Thinking-A Q4 -->
             <li class="model-item">
-                <strong>Model 22.6</strong>
+                <strong>Model 2</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ COMPLEX LOGIC & REASONING: Palmyra-Mini-Thinking-A 1.78B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo22.6">prithivMLmods/palmyra-mini-thinking-AIO-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo22.6')">Copy</button>
-                        <span class="copied" id="copied22.6">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo2">prithivMLmods/palmyra-mini-thinking-AIO-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo2')">Copy</button>
+                        <span class="copied" id="copied2">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model22.6">palmyra-mini-thinking-a.Q4_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model22.6')">Copy</button>
-                        <span class="copied" id="copiedModel22.6">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model2">palmyra-mini-thinking-a.Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model2')">Copy</button>
+                        <span class="copied" id="copiedModel2">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- CodeGemma-1.1-2B (Coding Focus) -->
+            <!-- Model 3: CodeGemma-1.1-2B -->
             <li class="model-item">
-                <strong>Model 24</strong>
+                <strong>Model 3</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ CODING & TEXT GEN: CodeGemma-1.1-2B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo24">google/codegemma-1.1-2b-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo24')">Copy</button>
-                        <span class="copied" id="copied24">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo3">google/codegemma-1.1-2b-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo3')">Copy</button>
+                        <span class="copied" id="copied3">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model24">codegemma-1.1-2b.Q5_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model24')">Copy</button>
-                        <span class="copied" id="copiedModel24">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model3">codegemma-1.1-2b.Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model3')">Copy</button>
+                        <span class="copied" id="copiedModel3">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- DeepSeek-Coder-1.3B (Coding/Math) -->
+            <!-- Model 4: DeepSeek-Coder-1.3B -->
             <li class="model-item">
-                <strong>Model 25</strong>
+                <strong>Model 4</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ CODING & MATH: DeepSeek-Coder-1.3B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo25">TheBloke/deepseek-coder-1.3b-base-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo25')">Copy</button>
-                        <span class="copied" id="copied25">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo4">TheBloke/deepseek-coder-1.3b-base-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo4')">Copy</button>
+                        <span class="copied" id="copied4">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model25">deepseek-coder-1.3b-base.Q4_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model25')">Copy</button>
-                        <span class="copied" id="copiedModel25">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model4">deepseek-coder-1.3b-base.Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model4')">Copy</button>
+                        <span class="copied" id="copiedModel4">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Qwen2.5-1.5B (Text/Math) -->
+            <!-- Model 5: Qwen2.5-1.5B -->
             <li class="model-item">
-                <strong>Model 26</strong>
+                <strong>Model 5</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ TEXT & MATH GEN: Qwen2.5-1.5B Q3</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo26">bartowski/Qwen2.5-1.5B-Instruct-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo26')">Copy</button>
-                        <span class="copied" id="copied26">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo5">bartowski/Qwen2.5-1.5B-Instruct-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo5')">Copy</button>
+                        <span class="copied" id="copied5">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model26">Qwen2.5-1.5B-Instruct-Q3_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model26')">Copy</button>
-                        <span class="copied" id="copiedModel26">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model5">Qwen2.5-1.5B-Instruct-Q3_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model5')">Copy</button>
+                        <span class="copied" id="copiedModel5">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Llama-3.2-1B (General Text/Reasoning) -->
+            <!-- Model 6: Llama-3.2-1B -->
             <li class="model-item">
-                <strong>Model 27</strong>
+                <strong>Model 6</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ GENERAL TEXT & REASONING: Llama-3.2-1B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo27">bartowski/Llama-3.2-1B-Instruct-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo27')">Copy</button>
-                        <span class="copied" id="copied27">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo6">bartowski/Llama-3.2-1B-Instruct-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo6')">Copy</button>
+                        <span class="copied" id="copied6">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model27">Llama-3.2-1B-Instruct-Q5_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model27')">Copy</button>
-                        <span class="copied" id="copiedModel27">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model6">Llama-3.2-1B-Instruct-Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model6')">Copy</button>
+                        <span class="copied" id="copiedModel6">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Gemma-2-2B (Multilingual Text/Math) -->
+            <!-- Model 7: Gemma-2-2B -->
             <li class="model-item">
-                <strong>Model 28</strong>
+                <strong>Model 7</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ MULTILINGUAL TEXT & MATH: Gemma-2-2B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo28">bartowski/gemma-2-2b-it-gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo28')">Copy</button>
-                        <span class="copied" id="copied28">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo7">bartowski/gemma-2-2b-it-gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo7')">Copy</button>
+                        <span class="copied" id="copied7">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model28">gemma-2-2b-it-Q4_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model28')">Copy</button>
-                        <span class="copied" id="copiedModel28">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model7">gemma-2-2b-it-Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model7')">Copy</button>
+                        <span class="copied" id="copiedModel7">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Phi-3-mini-3.8B (Reasoning/Coding) -->
+            <!-- Model 8: Phi-3-mini-3.8B -->
             <li class="model-item">
-                <strong>Model 29</strong>
+                <strong>Model 8</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ REASONING & CODING: Phi-3-mini-3.8B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo29">bartowski/Phi-3-mini-4k-instruct-gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo29')">Copy</button>
-                        <span class="copied" id="copied29">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo8">bartowski/Phi-3-mini-4k-instruct-gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo8')">Copy</button>
+                        <span class="copied" id="copied8">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model29">Phi-3-mini-4k-instruct-Q5_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model29')">Copy</button>
-                        <span class="copied" id="copiedModel29">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model8">Phi-3-mini-4k-instruct-Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model8')">Copy</button>
+                        <span class="copied" id="copiedModel8">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- TinyLlama-1.1B (Light Text Gen) -->
+            <!-- Model 9: TinyLlama-1.1B -->
             <li class="model-item">
-                <strong>Model 30</strong>
+                <strong>Model 9</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ LIGHT TEXT GEN: TinyLlama-1.1B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo30">TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo30')">Copy</button>
-                        <span class="copied" id="copied30">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo9">TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo9')">Copy</button>
+                        <span class="copied" id="copied9">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model30">TinyLlama-1.1B-Chat-v1.0-Q4_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model30')">Copy</button>
-                        <span class="copied" id="copiedModel30">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model9">TinyLlama-1.1B-Chat-v1.0-Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model9')">Copy</button>
+                        <span class="copied" id="copiedModel9">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- StableLM-2-Zephyr-1.6B (Chat/Coding) -->
+            <!-- Model 10: StableLM-2-Zephyr-1.6B -->
             <li class="model-item">
-                <strong>Model 31</strong>
+                <strong>Model 10</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ CHAT & CODING: StableLM-2-Zephyr-1.6B Q3</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo31">TheBloke/stablelm-2-zephyr-1_6b-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo31')">Copy</button>
-                        <span class="copied" id="copied31">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo10">TheBloke/stablelm-2-zephyr-1_6b-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo10')">Copy</button>
+                        <span class="copied" id="copied10">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model31">stablelm-2-zephyr-1_6b-Q3_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model31')">Copy</button>
-                        <span class="copied" id="copiedModel31">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model10">stablelm-2-zephyr-1_6b-Q3_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model10')">Copy</button>
+                        <span class="copied" id="copiedModel10">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- SmolLM3-3B (Math/Reasoning) -->
+            <!-- Model 11: SmolLM3-3B -->
             <li class="model-item">
-                <strong>Model 32</strong>
+                <strong>Model 11</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ MATH & REASONING: SmolLM3-3B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo32">ggml-org/SmolLM3-3B-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo32')">Copy</button>
-                        <span class="copied" id="copied32">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo11">ggml-org/SmolLM3-3B-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo11')">Copy</button>
+                        <span class="copied" id="copied11">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model32">smollm3-3b.Q5_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model32')">Copy</button>
-                        <span class="copied" id="copiedModel32">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model11">smollm3-3b.Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model11')">Copy</button>
+                        <span class="copied" id="copiedModel11">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- StarCoder2-3B (Coding) -->
+            <!-- Model 12: StarCoder2-3B -->
             <li class="model-item">
-                <strong>Model 33</strong>
+                <strong>Model 12</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ PROGRAMMING & CODING: StarCoder2-3B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo33">TheBloke/starcoder2-3b-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo33')">Copy</button>
-                        <span class="copied" id="copied33">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo12">TheBloke/starcoder2-3b-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo12')">Copy</button>
+                        <span class="copied" id="copied12">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model33">starcoder2-3b.Q4_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model33')">Copy</button>
-                        <span class="copied" id="copiedModel33">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model12">starcoder2-3b.Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model12')">Copy</button>
+                        <span class="copied" id="copiedModel12">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Qwen3-1.7B (Text Gen) -->
+            <!-- Model 13: Qwen3-1.7B -->
             <li class="model-item">
-                <strong>Model 34</strong>
+                <strong>Model 13</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ TEXT GENERATION: Qwen3-1.7B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo34">Qwen/Qwen3-1.7B-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo34')">Copy</button>
-                        <span class="copied" id="copied34">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo13">Qwen/Qwen3-1.7B-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo13')">Copy</button>
+                        <span class="copied" id="copied13">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model34">Qwen3-1.7B-Q5_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model34')">Copy</button>
-                        <span class="copied" id="copiedModel34">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model13">Qwen3-1.7B-Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model13')">Copy</button>
+                        <span class="copied" id="copiedModel13">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Gemma-1.1-2B-IT (Instruct Text/Math) -->
+            <!-- Model 14: Gemma-1.1-2B-IT -->
             <li class="model-item">
-                <strong>Model 35</strong>
+                <strong>Model 14</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ INSTRUCT TEXT & MATH: Gemma-1.1-2B-IT Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo35">lmstudio-community/gemma-1.1-2b-it-GGUF</span>
-                        <button class="copy-btn" onclick="copyToClipboard('repo35')">Copy</button>
-                        <span class="copied" id="copied35">Copied!</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo14">lmstudio-community/gemma-1.1-2b-it-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo14')">Copy</button>
+                        <span class="copied" id="copied14">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model35">gemma-1.1-2b-it-Q4_K_M.gguf</span>
-                        <button class="copy-btn" onclick="copyToClipboard('model35')">Copy</button>
-                        <span class="copied" id="copiedModel35">Copied!</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model14">gemma-1.1-2b-it-Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model14')">Copy</button>
+                        <span class="copied" id="copiedModel14">Copied!</span>
+                    </p>
+                </div>
+            </li>
+
+            <!-- Model 15: LFM2-1.2B (New from Document) -->
+            <li class="model-item">
+                <strong>Model 15</strong>
+                <div class="model-details">
+                    <p><strong>Node Name:</strong> ⬢ EDGE AI TEXT & MATH: LFM2-1.2B Q5</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo15">LiquidAI/LFM2-1.2B-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo15')">Copy</button>
+                        <span class="copied" id="copied15">Copied!</span>
+                    </p>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model15">LFM2-1.2B-Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model15')">Copy</button>
+                        <span class="copied" id="copiedModel15">Copied!</span>
+                    </p>
+                </div>
+            </li>
+
+            <!-- Model 16: DeepSeek-Coder-V2-Lite-1.3B (New Addition) -->
+            <li class="model-item">
+                <strong>Model 16</strong>
+                <div class="model-details">
+                    <p><strong>Node Name:</strong> ⬢ ADVANCED CODING & MATH: DeepSeek-Coder-V2-Lite-1.3B Q4</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo16">bartowski/DeepSeek-Coder-V2-Lite-1.3B-Instruct-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo16')">Copy</button>
+                        <span class="copied" id="copied16">Copied!</span>
+                    </p>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model16">DeepSeek-Coder-V2-Lite-1.3B-Instruct-Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model16')">Copy</button>
+                        <span class="copied" id="copiedModel16">Copied!</span>
+                    </p>
+                </div>
+            </li>
+
+            <!-- Model 17: CodeGemma-1.1-2B (Enhanced) -->
+            <li class="model-item">
+                <strong>Model 17</strong>
+                <div class="model-details">
+                    <p><strong>Node Name:</strong> ⬢ CODE GEN & TEXT: CodeGemma-1.1-2B Q5</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo17">google/codegemma-1.1-2b-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo17')">Copy</button>
+                        <span class="copied" id="copied17">Copied!</span>
+                    </p>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model17">codegemma-1.1-2b.Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model17')">Copy</button>
+                        <span class="copied" id="copiedModel17">Copied!</span>
+                    </p>
+                </div>
+            </li>
+
+            <!-- Model 18: SmolLM3-1.7B (New Addition) -->
+            <li class="model-item">
+                <strong>Model 18</strong>
+                <div class="model-details">
+                    <p><strong>Node Name:</strong> ⬢ MATH & REASONING: SmolLM3-1.7B Q4</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo18">ggml-org/SmolLM3-1.7B-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo18')">Copy</button>
+                        <span class="copied" id="copied18">Copied!</span>
+                    </p>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model18">smollm3-1.7b.Q4_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model18')">Copy</button>
+                        <span class="copied" id="copiedModel18">Copied!</span>
+                    </p>
+                </div>
+            </li>
+
+            <!-- Model 19: Qwen3-0.6B (New Addition) -->
+            <li class="model-item">
+                <strong>Model 19</strong>
+                <div class="model-details">
+                    <p><strong>Node Name:</strong> ⬢ ULTRA LIGHT TEXT GEN: Qwen3-0.6B Q5</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo19">geoffmunn/Qwen3-0.6B-GGUF</span>
+                        <button class="copy-btn" onclick="copyToClipboard('repo19')">Copy</button>
+                        <span class="copied" id="copied19">Copied!</span>
+                    </p>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model19">Qwen3-0.6B-Q5_K_M.gguf</span>
+                        <button class="copy-btn" onclick="copyToClipboard('model19')">Copy</button>
+                        <span class="copied" id="copiedModel19">Copied!</span>
                     </p>
                 </div>
             </li>
