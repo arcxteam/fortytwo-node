@@ -23,7 +23,7 @@ Key Bot Features:
 ### Update Services & Depedency
 
 ```bash
-sudo apt update && sudo apt upgrade -y \
+sudo apt update && sudo apt upgrade -y &&
 sudo apt install -y \
 automake autoconf build-essential clang curl \
 gcc git htop iptables jq libatomic1 libblas3 libclang-dev \
@@ -64,7 +64,7 @@ screen -S fortytwo
 ```bash
 chmod +x linux.sh && ./linux.sh
 ```
-- Testing with model no. 22 `Qwen3 1.7B Q4` note; **I'm recommended use custom model**
+- Testing with default **model no. 22** `Qwen3 1.7B Q4` note **I'm recommended use custom model**
 - Back to main root ~/ `Ctrl + A + D`
 
 ```
@@ -72,7 +72,7 @@ chmod +x linux.sh && ./linux.sh
 screen -r fortytwo
 ```
 
-> Note; After installation, the FortyTwo console application will be ready to use. **If you can't get received 42T after a few minutes or hourly.. check your logs if get like here**
+> Note; After installation, the FortyTwo console application will be ready to use. **Not yet get received 42T after a few minutes or hourly.. check your logs, if get like here**
 
 - INFO Request 41d89c4b5b394015179749b91b525a75d6327cb049f5aa3239caa2dd3dae569d <mark>has too short deadline to fit. Required speed: 0.001164882414882415. Max: 0.001</mark>
 - INFO Remaining join duration for Inference Join state: 4982 ms
@@ -81,7 +81,7 @@ screen -r fortytwo
 #### Solutions
 - The server need faster for complete any Task Inference
 - Need activate on AVX2/AVX or use another low-parameter LLModel visit the Huggingface
-- Or custom..check here for list LLM GGUF Models https://arcxteam.github.io/fortytwo-node/llmodel.html
+- Check my list custom-parameter GGUF LLModels for Text, Code & Math https://arcxteam.github.io/fortytwo-node/llmodel.html
 
 ---
 
@@ -109,12 +109,12 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
    chmod +x linux.sh && ./linux.sh
    ```
 
-3. **Another my Custom Model GGUF**
-   - Costum model by import `select 1`
+3. **Another Custom Model GGUF**
+   - Costum model by import plz `select 1`
    - Need use `LLM_HF_REPO` and `LLM_HF_MODEL_NAME`
    - Visit [Huggingface](https://huggingface.co/models?pipeline_tag=text-generation&num_parameters=min:0,max:6B&library=gguf&apps=llama.cpp&other=text-generation-inference&sort=trending)
-   - Check repo file model need a parameter key is `GGUF` `llama.cpp`
-   - Select low LLModel as medium 1GB-3GB use `1B-6B Token` and param `Q5_K_M` or `Q4_K_M` or `Q3_K_M`
+   - Check repo file model need a parameter key is `GGUF` & `llama.cpp`
+   - Select low LLModel medium 1GB-3GB file and use token `1B-6B` with quantity param `Q5_K_M` or `Q4_K_M` or `Q3_K_M`
    - Check my list custom-parameter GGUF LLModels for Text, Code & Math https://arcxteam.github.io/fortytwo-node/llmodel.html
 
    Example my custom LLModel
