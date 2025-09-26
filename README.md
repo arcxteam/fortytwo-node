@@ -1,4 +1,4 @@
-# Fortytwo Node Operator For Inference With CPU Mode
+# Fortytwo Node Operator FOR Inference By CPU Mode
 
 ![banner](fortytwo.gif)
 
@@ -29,7 +29,7 @@ automake autoconf build-essential clang curl \
 gcc git htop iptables jq libatomic1 libblas3 libclang-dev \
 libgbm1 liblapack3 liblapack-dev libleveldb-dev libomp-dev \
 libopenblas-dev libgomp1 libopenmpi-dev libssl-dev lz4 make nano \
-ncdu ninja-build nvme-cli ocl-icd-opencl-dev pkg-config \
+ncdu ninja-build nvme-cli pkg-config \
 python3-pip screen tar tmux unzip wget
 ```
 
@@ -68,7 +68,7 @@ chmod +x linux.sh && ./linux.sh
 - Back to main root ~/ `Ctrl + A + D`
 
 ```
-# back to screen
+# back to screen log
 screen -r fortytwo
 ```
 
@@ -79,9 +79,9 @@ screen -r fortytwo
 - INFO Request d06dc0566a9fac84ab6539b7554f6605c593962fe2365cbc84918efbf06a4b11 <mark>has too short deadline to fit. Required speed: 0.001233404909875498. Max: 0.001</mark>
 
 #### Solutions
-- Ur server need faster for complete any Task Inference
-- Need activate on AVX2 or use another low LLModel visit the Huggingface
-- List LLModel check here https://github.com/arcxteam/fortytwo-node/blob/main/llmodel.py
+- The server need faster for complete any Task Inference
+- Need activate on AVX2 or use another low-parameter LLModel visit the Huggingface
+- Or check here for list LLM GGUF Models custom https://arcxteam.github.io/fortytwo-node/llmodel.html
 
 ---
 
@@ -93,7 +93,7 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 - But download URL appends `-cuda124` for GPU, even in "CPU" branch—likely a script bug (non-existent CPU file defaults to GPU).
 
 ### Fix
-1. **Manual Download & Replace**:
+1. **Manual Download Capsule & Replace**:
    ```bash
    cd ~/Fortytwo/fortytwo-console-app-main/FortytwoNode
    rm -f FortytwoCapsule  # Remove broken binary
@@ -109,12 +109,13 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
    chmod +x linux.sh && ./linux.sh
    ```
 
-3. **Another my Custom Model No.23**
+3. **Another my Custom Model GGUF**
    - Costum model by import `select 1`
    - Need use `LLM_HF_REPO` and `LLM_HF_MODEL_NAME`
    - Visit `Huggingface`
-   - Check file repo model need suppport parameter key is `GGUF`
+   - Check repo file model need a parameter key is `GGUF`
    - Select low LLModel as medium 1GB-3GB use `Q5_K_M` or `Q4_K_M` or `Q3_K_M`
+   - Or check here for list LLM GGUF Models custom https://arcxteam.github.io/fortytwo-node/llmodel.html
    
    Example my custom LLModel
 
