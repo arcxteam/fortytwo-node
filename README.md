@@ -112,11 +112,11 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 3. **Another my Custom Model GGUF**
    - Costum model by import `select 1`
    - Need use `LLM_HF_REPO` and `LLM_HF_MODEL_NAME`
-   - Visit `Huggingface`
-   - Check repo file model need a parameter key is `GGUF`
-   - Select low LLModel as medium 1GB-3GB use `Q5_K_M` or `Q4_K_M` or `Q3_K_M`
-   - Or check here for list LLM GGUF Models custom https://arcxteam.github.io/fortytwo-node/llmodel.html
-   
+   - Visit [Huggingface](https://huggingface.co/models?pipeline_tag=text-generation&num_parameters=min:0,max:6B&library=gguf&apps=llama.cpp&other=text-generation-inference&sort=trending)
+   - Check repo file model need a parameter key is `GGUF` `llama.cpp`
+   - Select low LLModel as medium 1GB-3GB use `1B-6B Token` and param `Q5_K_M` or `Q4_K_M` or `Q3_K_M`
+   - Check my list custom-parameter GGUF LLModels for Text, Code & Math https://arcxteam.github.io/fortytwo-node/llmodel.html
+
    Example my custom LLModel
 
    ```bash
@@ -124,7 +124,8 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
    LLM_HF_MODEL_NAME="palmyra-mini-thinking-b-GGUF/palmyra-mini-thinking-b.Q5_K_M.gguf"
    NODE_NAME="⬢ MATH EQUATIONS & REASONING: Palmyra-Mini-Thinking-B 1.78B Q5"
    ```
-
+     <img width="919" height="210" alt="image" src="https://github.com/user-attachments/assets/449fa513-7a5c-43f0-8dfb-3a1c30d9d4f6" />
+  
 ### Notes
 - Official docs require NVIDIA GPU; CPU support may be limited/slower.
 - If fails again, edit script: Remove `+="-cuda124"` in download sections.
