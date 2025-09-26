@@ -61,10 +61,10 @@ wget https://github.com/arcxteam/fortytwo-node/linux.sh
 ```bash
 screen -S fortytwo
 ```
-
 ```bash
 chmod +x linux.sh && ./linux.sh
 ```
+- Testing with model no. 22 `Qwen3 1.7B Q4` note; **I'm recommended use custom model**
 - Back to main root ~/ `Ctrl + A + D`
 
 ```
@@ -81,7 +81,7 @@ screen -r fortytwo
 #### Solutions
 - The server need faster for complete any Task Inference
 - Need activate on AVX2 or use another low-parameter LLModel visit the Huggingface
-- Or check here for list LLM GGUF Models custom https://arcxteam.github.io/fortytwo-node/llmodel.html
+- Or custom..check here for list LLM GGUF Models https://arcxteam.github.io/fortytwo-node/llmodel.html
 
 ---
 
