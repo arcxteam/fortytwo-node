@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Low-Parameter LLM GGUF Models</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Parameter LLM GGUF Models</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Geist Mono', monospace;
             background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
-            color: #e0e0e0;
+            color: #ffffff;
             margin: 0;
             padding: 20px;
             line-height: 1.6;
@@ -17,8 +17,8 @@
         }
         h1 {
             text-align: center;
-            color: #00ff88;
-            text-shadow: 0 0 10px #00ff88;
+            color: #bbff00;
+            text-shadow: 0 0 10px #7ff1bc;
             margin-bottom: 30px;
             font-weight: 700;
         }
@@ -28,8 +28,8 @@
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-            border: 1px solid #00ff88;
+            box-shadow: 0 0 20px rgba(51, 236, 144, 0.2);
+            border: 1px solid #ffffff;
         }
         .model-list {
             list-style: none;
@@ -41,30 +41,30 @@
             padding: 15px;
             border-radius: 8px;
             transition: transform 0.3s, box-shadow 0.3s;
-            border-left: 3px solid #00ff88;
+            border-left: 3px solid #bbff00;
         }
         .model-item:hover {
             transform: scale(1.02);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 15px rgba(165, 236, 33, 0.5);
         }
         .model-details {
             margin: 10px 0;
         }
         .copy-btn {
-            background: #00ff88;
+            background: #f0647b;
             border: none;
             padding: 5px 10px;
             border-radius: 3px;
             cursor: pointer;
-            color: #0a0a0a;
+            color: #000000;
             font-weight: 500;
             margin-left: 5px;
         }
         .copy-btn:hover {
-            background: #00cc6a;
+            background: #bbff00;
         }
         .copied {
-            color: #00ff88;
+            color: #bbff00;
             margin-left: 10px;
             display: none;
             font-weight: 700;
@@ -73,7 +73,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Low-Parameter LLM GGUF Models for Text, Coding & Math</h1>
+        <h1>Custom-Parameter GGUF LLModels for Text, Code & Math</h1>
         <ul class="model-list">
             <!-- Model 1: Palmyra-Mini-Thinking-B -->
             <li class="model-item">
@@ -84,23 +84,23 @@
                         <button class="copy-btn" onclick="copyToClipboard('repo1')">Copy</button>
                         <span class="copied" id="copied1">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model1">palmyra-mini-thinking-b.Q5_K_M.gguf</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model1">palmyra-mini-thinking-b-GGUF/palmyra-mini-thinking-b.Q5_K_M.gguf</span>
                         <button class="copy-btn" onclick="copyToClipboard('model1')">Copy</button>
                         <span class="copied" id="copiedModel1">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Model 2: Palmyra-Mini-Thinking-A Q4 -->
+            <!-- Model 2: Palmyra-Mini-Thinking-A -->
             <li class="model-item">
                 <strong>Model 2</strong>
                 <div class="model-details">
-                    <p><strong>Node Name:</strong> ⬢ COMPLEX LOGIC & REASONING: Palmyra-Mini-Thinking-A 1.78B Q4</p>
+                    <p><strong>Node Name:</strong> ⬢ COMPLEX LOGIC & REASONING: Palmyra-Mini-Thinking-A 1.78B Q5</p>
                     <p><strong>LLM_HF_REPO:</strong> <span id="repo2">prithivMLmods/palmyra-mini-thinking-AIO-GGUF</span>
                         <button class="copy-btn" onclick="copyToClipboard('repo2')">Copy</button>
                         <span class="copied" id="copied2">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model2">palmyra-mini-thinking-a.Q4_K_M.gguf</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model2">palmyra-mini-thinking-a-GGUF/palmyra-mini-thinking-a.Q5_K_M.gguf</span>
                         <button class="copy-btn" onclick="copyToClipboard('model2')">Copy</button>
                         <span class="copied" id="copiedModel2">Copied!</span>
                     </p>
@@ -299,39 +299,39 @@
                 </div>
             </li>
 
-            <!-- Model 15: LFM2-1.2B (New from Document) -->
+            <!-- Model 15: LFM2-2.6B -->
             <li class="model-item">
                 <strong>Model 15</strong>
                 <div class="model-details">
-                    <p><strong>Node Name:</strong> ⬢ EDGE AI TEXT & MATH: LFM2-1.2B Q5</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo15">LiquidAI/LFM2-1.2B-GGUF</span>
+                    <p><strong>Node Name:</strong> ⬢ EDGE AI TEXT & MATH: LFM2-2.6B Q5</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo15">LiquidAI/LFM2-2.6B-GGUF</span>
                         <button class="copy-btn" onclick="copyToClipboard('repo15')">Copy</button>
                         <span class="copied" id="copied15">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model15">LFM2-1.2B-Q5_K_M.gguf</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model15">LFM2-2.6B-Q5_K_M.gguf</span>
                         <button class="copy-btn" onclick="copyToClipboard('model15')">Copy</button>
                         <span class="copied" id="copiedModel15">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Model 16: DeepSeek-Coder-V2-Lite-1.3B (New Addition) -->
+            <!-- Model 16: DeepSeek-Coder-V2-Lite-1.3B -->
             <li class="model-item">
                 <strong>Model 16</strong>
                 <div class="model-details">
                     <p><strong>Node Name:</strong> ⬢ ADVANCED CODING & MATH: DeepSeek-Coder-V2-Lite-1.3B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo16">bartowski/DeepSeek-Coder-V2-Lite-1.3B-Instruct-GGUF</span>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo16">TheBloke/deepseek-coder-1.3b-instruct-GGUF</span>
                         <button class="copy-btn" onclick="copyToClipboard('repo16')">Copy</button>
                         <span class="copied" id="copied16">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model16">DeepSeek-Coder-V2-Lite-1.3B-Instruct-Q4_K_M.gguf</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model16">deepseek-coder-1.3b-instruct.Q5_K_M.gguf</span>
                         <button class="copy-btn" onclick="copyToClipboard('model16')">Copy</button>
                         <span class="copied" id="copiedModel16">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Model 17: CodeGemma-1.1-2B (Enhanced) -->
+            <!-- Model 17: CodeGemma-1.1-2B -->
             <li class="model-item">
                 <strong>Model 17</strong>
                 <div class="model-details">
@@ -347,23 +347,23 @@
                 </div>
             </li>
 
-            <!-- Model 18: SmolLM3-1.7B (New Addition) -->
+            <!-- Model 18: SmolLM3-1.7B -->
             <li class="model-item">
                 <strong>Model 18</strong>
                 <div class="model-details">
-                    <p><strong>Node Name:</strong> ⬢ MATH & REASONING: SmolLM3-1.7B Q4</p>
-                    <p><strong>LLM_HF_REPO:</strong> <span id="repo18">ggml-org/SmolLM3-1.7B-GGUF</span>
+                    <p><strong>Node Name:</strong> ⬢ MATH & REASONING: SmolLM3-3B Q4</p>
+                    <p><strong>LLM_HF_REPO:</strong> <span id="repo18">ggml-org/SmolLM3-3B-GGUF</span>
                         <button class="copy-btn" onclick="copyToClipboard('repo18')">Copy</button>
                         <span class="copied" id="copied18">Copied!</span>
                     </p>
-                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model18">smollm3-1.7b.Q4_K_M.gguf</span>
+                    <p><strong>LLM_HF_MODEL_NAME:</strong> <span id="model18">SmolLM3-Q4_K_M.gguf</span>
                         <button class="copy-btn" onclick="copyToClipboard('model18')">Copy</button>
                         <span class="copied" id="copiedModel18">Copied!</span>
                     </p>
                 </div>
             </li>
 
-            <!-- Model 19: Qwen3-0.6B (New Addition) -->
+            <!-- Model 19: Qwen3-0.6B -->
             <li class="model-item">
                 <strong>Model 19</strong>
                 <div class="model-details">
