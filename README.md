@@ -49,12 +49,12 @@ rm linux.sh
 
 ### Use P2P a Peers Network (optional)
 ```bash
-wget https://github.com/arcxteam/fortytwo-node/.p2p_known_peers.json
+wget https://raw.githubusercontent.com/arcxteam/fortytwo-node/refs/heads/main/.p2p_known_peers.json
 ```
 
 ### Redirect installation script or Cloning repo
 ```bash
-wget https://github.com/arcxteam/fortytwo-node/linux.sh
+wget https://raw.githubusercontent.com/arcxteam/fortytwo-node/refs/heads/main/linux.sh
 ```
 
 ### Create a screen & Running Operator
@@ -72,7 +72,7 @@ chmod +x linux.sh && ./linux.sh
 screen -r fortytwo
 ```
 
-> Note; After installation, the FortyTwo console application will be ready to use. **If you can't get received 42T after a few minutes or hourly..check logs if get like here**
+> Note; After installation, the FortyTwo console application will be ready to use. **If you can't get received 42T after a few minutes or hourly.. check your logs if get like here**
 
 - INFO Request 41d89c4b5b394015179749b91b525a75d6327cb049f5aa3239caa2dd3dae569d <mark>has too short deadline to fit. Required speed: 0.001164882414882415. Max: 0.001</mark>
 - INFO Remaining join duration for Inference Join state: 4982 ms
@@ -80,7 +80,7 @@ screen -r fortytwo
 
 #### Solutions
 - The server need faster for complete any Task Inference
-- Need activate on AVX2 or use another low-parameter LLModel visit the Huggingface
+- Need activate on AVX2/AVX or use another low-parameter LLModel visit the Huggingface
 - Or custom..check here for list LLM GGUF Models https://arcxteam.github.io/fortytwo-node/llmodel.html
 
 ---
@@ -105,7 +105,7 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
    ```bash
    cd ~/Fortytwo/fortytwo-console-app-main
    rm linux.sh
-   wget https://github.com/arcxteam/fortytwo-node/linux.sh
+   wget https://raw.githubusercontent.com/arcxteam/fortytwo-node/refs/heads/main/linux.sh
    chmod +x linux.sh && ./linux.sh
    ```
 
