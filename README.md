@@ -121,7 +121,7 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 
    ```bash
    LLM_HF_REPO="prithivMLmods/palmyra-mini-thinking-AIO-GGUF"
-   LLM_HF_MODEL_NAME="palmyra-mini-thinking-b.Q5_K_M.gguf"
+   LLM_HF_MODEL_NAME="palmyra-mini-thinking-b-GGUF/palmyra-mini-thinking-b.Q5_K_M.gguf"
    NODE_NAME="⬢ MATH EQUATIONS & REASONING: Palmyra-Mini-Thinking-B 1.78B Q5"
    ```
 
