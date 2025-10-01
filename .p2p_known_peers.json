@@ -1,5 +1,25 @@
 [
   {
+    "peer_id": "16Uiu2HAmUc4qab1T1dNoHrCv9qyXvm19HuC8UR7MmtUjaRxgXWst",
+    "addr": "/dnsaddr/boot.fortytwo.network/p2p/16Uiu2HAmUc4qab1T1dNoHrCv9qyXvm19HuC8UR7MmtUjaRxgXWst",
+    "last_seen": 1759330127
+  },
+  {
+    "peer_id": "16Uiu2HAmTHFmJ1Qs63zhq7Ki2hQpiYiL6cfHAaxrdnVpYAny5H7R",
+    "addr": "/dnsaddr/boot.fortytwo.network/p2p/16Uiu2HAmTHFmJ1Qs63zhq7Ki2hQpiYiL6cfHAaxrdnVpYAny5H7R",
+    "last_seen": 1759330126
+  },
+  {
+    "peer_id": "16Uiu2HAkzAcdH6GxdX1wfuJJBPjbQtzt34cSUKTRdZv45CcPkxaF",
+    "addr": "/dnsaddr/boot.fortytwo.network/p2p/16Uiu2HAkzAcdH6GxdX1wfuJJBPjbQtzt34cSUKTRdZv45CcPkxaF",
+    "last_seen": 1759330128
+  },
+  {
+    "peer_id": "16Uiu2HAmPRYsyxRUJGSWB73oYX8cy8hdUHsN6RGUsBe37g7bfBqV",
+    "addr": "/dnsaddr/boot.fortytwo.network/p2p/16Uiu2HAmPRYsyxRUJGSWB73oYX8cy8hdUHsN6RGUsBe37g7bfBqV",
+    "last_seen": 1759330127
+  },
+  {
     "peer_id": "16Uiu2HAmPqaAQL65ZGTgP4AGLjAFNPV6rmTV3KbmPyRYtWfbZkYV",
     "addr": "/ip4/3.12.155.185/tcp/42042/p2p/16Uiu2HAmPqaAQL65ZGTgP4AGLjAFNPV6rmTV3KbmPyRYtWfbZkYV",
     "last_seen": 1758869696
