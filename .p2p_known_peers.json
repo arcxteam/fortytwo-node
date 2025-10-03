@@ -1,5 +1,10 @@
 [
   {
+    "peer_id": "16Uiu2HAmPRYsyxRUJGSWB73oYX8cy8hdUHsN6RGUsBe37g7bfBqV",
+    "addr": "/dnsaddr/boot.fortytwo.network/p2p/16Uiu2HAmPRYsyxRUJGSWB73oYX8cy8hdUHsN6RGUsBe37g7bfBqV",
+    "last_seen": 1759472398
+  },
+  {
     "peer_id": "16Uiu2HAmUc4qab1T1dNoHrCv9qyXvm19HuC8UR7MmtUjaRxgXWst",
     "addr": "/dnsaddr/boot.fortytwo.network/p2p/16Uiu2HAmUc4qab1T1dNoHrCv9qyXvm19HuC8UR7MmtUjaRxgXWst",
     "last_seen": 1759330127
