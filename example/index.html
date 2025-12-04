@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard FortyTwo Node by 0xgrey</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #1a1f2e;
+      --bg-tertiary: #212937;
+      --border-color: #2a3142;
+      --text-primary: #e4e4e7;
+      --text-secondary: #9ca3af;
+      --accent-yellow: #fbbf24;
+      --accent-green: #34d399;
+      --accent-blue: #60a5fa;
+    }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1 {
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .leaderboard-card {
+      background: linear-gradient(145deg, var(--bg-secondary), #151922);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .table {
+        --bs-table-bg: transparent;
+        --bs-table-striped-bg: rgba(255, 255, 255, 0.025);
+        --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background: var(--bg-tertiary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.8px;
+        color: var(--text-secondary);
+        border: none;
+        padding: 1rem 0.75rem;
+    }
+
+    .table tbody td {
+        border-color: var(--border-color);
+        vertical-align: middle;
+        padding: 0.9rem 0.75rem;
+        font-weight: 500;
+    }
+
+    .table tbody tr {
+        transition: background-color 0.2s ease-in-out;
+    }
+    
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .rank-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; }
+    .rank-2 { background: linear-gradient(135deg, #c0c0c0, #e8e8e8); color: #333; }
+    .rank-3 { background: linear-gradient(135deg, #cd7f32, #e4a853); color: #333; }
+    .rank-default { background: var(--bg-tertiary); }
+
+    .wallet-address {
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        background: var(--bg-tertiary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+
+    #loading {
+        animation: fadeIn 0.4s ease-out;
+    }
+    
+    .fa-spinner {
+        color: var(--accent-blue);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+  </style>
+</head>
+<body>
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-4"><i class="fas fa-trophy text-warning me-3"></i>FortyTwo Leaderboard</h1>
+    <p class="lead text-secondary">Top 60 Participants • <span id="total">0</span> Total Players</p>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div id="loading" class="text-center my-5">
+    <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+    <p class="text-secondary">Fetching live data...</p>
+  </div>
+
+  <!-- Results Container -->
+  <div id="hasil"></div>
+</div>
+
+<script>
+// API URL to fetch the top 100 data top (you can edit page & size)
+const API_URL = "https://jc1n4ugo1k.execute-api.us-east-2.amazonaws.com/leaderboard_v2?period=all_time&page=1&size=100";
+
+/**
+ * Fetches data from the API and renders the leaderboard table.
+ */
+async function displayLeaderboard() {
+  const hasilDiv = document.getElementById("hasil");
+  const totalSpan = document.getElementById("total");
+  const loadingDiv = document.getElementById("loading");
+
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText} (${response.status})`);
+    }
+    const data = await response.json();
+    
+    // Hide loading indicator
+    loadingDiv.style.display = 'none';
+
+    // Update total players count
+    totalSpan.textContent = data.total.toLocaleString();
+
+    // Build the HTML for the table
+    let tableHTML = `
+      <div class="leaderboard-card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark table-striped table-hover align-middle">
+              <thead>
+                <tr>
+                  <th><i class="fas fa-list-ol me-2"></i>Rank</th>
+                  <th><i class="fas fa-user me-2"></i>Participant</th>
+                  <th class="text-end"><i class="fas fa-calendar-check me-2"></i>Events</th>
+                  <th class="text-end"><i class="fas fa-trophy me-2"></i>Wins</th>
+                  <th class="text-end"><i class="fas fa-coins me-2"></i>Reward</th>
+                  <th class="text-end"><i class="fas fa-clock me-2"></i>Activity</th>
+                  <th><i class="fas fa-wallet me-2"></i>Wallet</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+    data.results.forEach(r => {
+      const reward = Number(r.total_reward).toLocaleString("en-US");
+      const activityH = (r.activity_time / 3600).toFixed(1);
+      const winRate = r.events_participated > 0 ? ((r.wins / r.events_participated) * 100).toFixed(1) : 0;
+      const walletShort = `${r.original.slice(0, 10)}…${r.original.slice(-8)}`;
+      
+      let rankClass = 'rank-default';
+      if(r.rank === 1) rankClass = 'rank-1';
+      else if(r.rank === 2) rankClass = 'rank-2';
+      else if(r.rank === 3) rankClass = 'rank-3';
+
+      // The yellow background for top 10 has been removed
+      tableHTML += `
+        <tr>
+          <td><span class="rank-badge ${rankClass}">${r.rank}</span></td>
+          <td class="fw-semibold">${r.participant}</td>
+          <td class="text-end">${r.events_participated.toLocaleString()}</td>
+          <td class="text-end">${r.wins.toLocaleString()} <small class="text-success">(${winRate}%)</small></td>
+          <td class="text-end fw-bold" style="color: var(--accent-yellow)">${reward} FOR</td>
+          <td class="text-end">${activityH}h</td>
+          <td><code class="wallet-address">${walletShort}</code></td>
+        </tr>`;
+    });
+
+    tableHTML += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+
+    // Display the table on the page
+    hasilDiv.innerHTML = tableHTML;
+
+  } catch (error) {
+    // Hide loading and display an error message
+    loadingDiv.style.display = 'none';
+    hasilDiv.innerHTML = `
+      <div class="alert alert-danger text-center" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Error:</strong> ${error.message}.
+        <br><small>If this is a CORS error, your browser is blocking the request. This data needs to be fetched via a backend server or a CORS proxy.</small>
+      </div>`;
+  }
+}
+
+// Execute the function when the page content has fully loaded
+document.addEventListener("DOMContentLoaded", displayLeaderboard);
+</script>
+
+</body>
+</html>
