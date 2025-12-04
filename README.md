@@ -4,6 +4,10 @@
 
 This repository contains installation instructions and helper scripts for setting up the FortyTwo Network console application on Linux systems
 
+## Example Dashboard If Need Buidl
+
+> **Sample index.html https://arcxteam.github.io/fortytwo-node/example/**
+
 ## 1. Get Realtime Node by Telegram Bot
 
 Use tool-bot monitoring FortyTwo node operator in performs swarm model inference! Get a detail dashboard ranking, received token, daily report & tracking any transaction FOR 42Tokens in participant network
@@ -11,7 +15,7 @@ Use tool-bot monitoring FortyTwo node operator in performs swarm model inference
 > **Got bot here...** https://greyscope.xyz/x/fortytwo
 
 Key Bot Features:
- - Get real-time performs using etherscan APIs
+ - Get real-time performs using fast ETHERSCAN APIs
  - Get binding wallet maximum 2 EOA wallet address
  - Get amount balances in MONAD, FOR 42Token and recent activity
  - Get dashboard insights : Rank, Name, Win Rate, Rounds Won, Activity and Rewards
