@@ -99,20 +99,26 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 
 ### Fix
 1. **Manual Download Capsule & Replace**:
-   ```bash
-   cd ~/FortytwoCLI/fortytwo-console-app-main/FortytwoNode
-   rm -f FortytwoCapsule  # remove & redownload
-   wget "https://download.swarminference.io/capsule/v$(curl -s https://download.swarminference.io/capsule/latest)/FortytwoCapsule-linux-amd64" \ -O FortytwoCapsule
-   chmod +x FortytwoCapsule
-   ```
+```bash
+cd ~/FortytwoCLI/fortytwo-console-app-main/FortytwoNode
+
+rm -f FortytwoCapsule
+
+LATEST=$(curl -s https://download.swarminference.io/capsule/latest)
+
+wget "https://download.swarminference.io/capsule/v${LATEST}/FortytwoCapsule-linux-amd64" \
+     -O FortytwoCapsule
+
+chmod +x FortytwoCapsule
+```
 
 2. **Rerun Script**:
-   ```bash
-   cd ~/FortytwoCLI/fortytwo-console-app-main
-   rm linux.sh
-   wget https://raw.githubusercontent.com/arcxteam/fortytwo-node/refs/heads/main/linux.sh
-   chmod +x linux.sh && ./linux.sh
-   ```
+```bash
+cd ~/FortytwoCLI/fortytwo-console-app-main
+rm linux.sh
+wget https://raw.githubusercontent.com/arcxteam/fortytwo-node/refs/heads/main/linux.sh
+chmod +x linux.sh && ./linux.sh
+```
 
 3. **Another Custom Model GGUF**
    - Costum model by import plz `select 1`
