@@ -101,8 +101,8 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 1. **Manual Download Capsule & Replace**:
    ```bash
    cd ~/FortytwoCLI/fortytwo-console-app-main/FortytwoNode
-   rm -f FortytwoCapsule # remove&redownload
-   wget "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/v$(curl -s https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest)/FortytwoCapsule-linux-amd64" -O FortytwoCapsule
+   rm -f FortytwoCapsule  # remove & redownload
+   wget "https://download.swarminference.io/capsule/v$(curl -s https://download.swarminference.io/capsule/latest)/FortytwoCapsule-linux-amd64" \ -O FortytwoCapsule
    chmod +x FortytwoCapsule
    ```
 
