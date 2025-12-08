@@ -39,7 +39,7 @@ python3-pip screen tar tmux unzip wget
 
 ### Create Folder
 ```bash
-mkdir -p ~/Fortytwo && cd ~/Fortytwo
+mkdir -p ~/FortytwoCLI && cd ~/FortytwoCLI
 ```
 
 ### Download Execute by Officially
@@ -100,7 +100,7 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 ### Fix
 1. **Manual Download Capsule & Replace**:
    ```bash
-   cd ~/Fortytwo/fortytwo-console-app-main/FortytwoNode
+   cd ~/FortytwoCLI/fortytwo-console-app-main/FortytwoNode
    rm -f FortytwoCapsule # remove&redownload
    wget "https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/v$(curl -s https://fortytwo-network-public.s3.us-east-2.amazonaws.com/capsule/latest)/FortytwoCapsule-linux-amd64" -O FortytwoCapsule
    chmod +x FortytwoCapsule
@@ -108,7 +108,7 @@ The script downloaded `FortytwoCapsule-linux-amd64-cuda124` (GPU version), which
 
 2. **Rerun Script**:
    ```bash
-   cd ~/Fortytwo/fortytwo-console-app-main
+   cd ~/FortytwoCLI/fortytwo-console-app-main
    rm linux.sh
    wget https://raw.githubusercontent.com/arcxteam/fortytwo-node/refs/heads/main/linux.sh
    chmod +x linux.sh && ./linux.sh
