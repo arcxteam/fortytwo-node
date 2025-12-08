@@ -583,10 +583,24 @@ animate_text_x2 "$BANNER_FULLNAME"
 
 startup() {
     animate_text "⎔ Starting Capsule..."
-    "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" --llm-hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR" > "$CAPSULE_LOGS" 2>&1 &
+
+    # ================================
+    #   FORCE CPU ONLY — NO GPU USE
+    # ================================
+    CUDA_VISIBLE_DEVICES="" \
+    SWARM_FORCE_CPU=1 \
+    SWARM_DISABLE_CUDA=1 \
+    SWARM_DISABLE_TENSORRT=1 \
+    SWARM_NO_GPU=1 \
+    NVIDIA_VISIBLE_DEVICES=none \
+    "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" \
+                    --llm-hf-model-name "$LLM_HF_MODEL_NAME" \
+                    --model-cache "$PROJECT_MODEL_CACHE_DIR" \
+                    > "$CAPSULE_LOGS" 2>&1 &
     CAPSULE_PID=$!
 
     animate_text "Be patient, it may take some time."
+
     while true; do
         STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CAPSULE_READY_URL")
         if [[ "$STATUS_CODE" == "200" ]]; then
@@ -603,6 +617,7 @@ startup() {
             exit 1
         fi
     done
+
     animate_text "⏃ Starting Protocol..."
     echo
     animate_text "Joining ::||"
@@ -631,6 +646,7 @@ trap cleanup SIGINT SIGTERM SIGHUP EXIT
 
 while true; do
     IS_ALIVE="true"
+
     if ! ps -p "$CAPSULE_PID" > /dev/null; then
         wait "$CAPSULE_PID"
         CAPSULE_EXIT_CODE=$?
