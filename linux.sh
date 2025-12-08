@@ -584,37 +584,93 @@ animate_text_x2 "$BANNER_FULLNAME"
 startup() {
     animate_text "⎔ Starting Capsule..."
 
-    # ================================
-    #   FORCE CPU ONLY — NO GPU USE
-    # ================================
-    CUDA_VISIBLE_DEVICES="" \
-    SWARM_FORCE_CPU=1 \
-    SWARM_DISABLE_CUDA=1 \
-    SWARM_DISABLE_TENSORRT=1 \
-    SWARM_NO_GPU=1 \
-    NVIDIA_VISIBLE_DEVICES=none \
-    "$CAPSULE_EXEC" --llm-hf-repo "$LLM_HF_REPO" \
-                    --llm-hf-model-name "$LLM_HF_MODEL_NAME" \
-                    --model-cache "$PROJECT_MODEL_CACHE_DIR" \
-                    > "$CAPSULE_LOGS" 2>&1 &
+    # arguments to capsule
+    CMD_ARGS=(--llm-hf-repo "$LLM_HF_REPO" --llm-hf-model-name "$LLM_HF_MODEL_NAME" --model-cache "$PROJECT_MODEL_CACHE_DIR")
+
+    # Force CPU / bypass GPU runtime checks (export so child process sees them)
+    export SWARM_FORCE_CPU=1
+    export SWARM_DISABLE_CUDA=1
+    export SWARM_DISABLE_TENSORRT=1
+    export SWARM_NO_GPU=1
+    export CUDA_VISIBLE_DEVICES=""
+    export NVIDIA_VISIBLE_DEVICES=none
+
+    # ensure CAPSULE_EXEC exists and is not empty/corrupt
+    if [[ ! -f "$CAPSULE_EXEC" || ! -s "$CAPSULE_EXEC" ]]; then
+        animate_text "    ↳ Capsule binary missing or empty — attempting to (re)download..."
+        rm -f "$CAPSULE_EXEC"
+        LATEST=$(curl -s https://download.swarminference.io/capsule/latest || true)
+        if [[ -z "$LATEST" ]]; then
+            animate_text "    ✕ Failed to fetch latest capsule version from swarminference."
+            animate_text "    ↳ Try alternate URL or check network."
+            return 1
+        fi
+        DOWNLOAD_CAPSULE_URL="https://download.swarminference.io/capsule/v${LATEST}/FortytwoCapsule-linux-amd64"
+        curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL" || { animate_text "    ✕ Download failed"; return 1; }
+        chmod +x "$CAPSULE_EXEC"
+    fi
+
+    # extra sanity: check file is ELF x86-64
+    file "$CAPSULE_EXEC" | grep -q "ELF 64-bit" || {
+        animate_text "    ✕ Capsule binary is not a valid ELF 64-bit executable."
+        animate_text "    ↳ Removing and re-downloading..."
+        rm -f "$CAPSULE_EXEC"
+        LATEST=$(curl -s https://download.swarminference.io/capsule/latest || true)
+        DOWNLOAD_CAPSULE_URL="https://download.swarminference.io/capsule/v${LATEST}/FortytwoCapsule-linux-amd64"
+        curl -L -o "$CAPSULE_EXEC" "$DOWNLOAD_CAPSULE_URL" || { animate_text "    ✕ Download failed"; return 1; }
+        chmod +x "$CAPSULE_EXEC"
+    }
+
+    # Run capsule in background with environment already exported; use setsid so it detaches from tty
+    setsid "$CAPSULE_EXEC" "${CMD_ARGS[@]}" > "$CAPSULE_LOGS" 2>&1 < /dev/null &
     CAPSULE_PID=$!
 
-    animate_text "Be patient, it may take some time."
+    # small wait, then check if process started
+    sleep 1
+    if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
+        animate_text "    ✕ Capsule process failed to start (PID: $CAPSULE_PID). Checking logs and kernel messages..."
+        echo "---- last lines of capsule log ----"
+        tail -n 40 "$CAPSULE_LOGS" 2>/dev/null || true
+        echo "---- dmesg (last 20 lines) ----"
+        dmesg | tail -n 20
+        return 1
+    fi
 
+    animate_text "Be patient, it may take some time."
+    # wait for ready endpoint with timeout
+    SECONDS_WAITED=0
+    TIMEOUT=300   # 5 minutes
     while true; do
-        STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CAPSULE_READY_URL")
+        STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CAPSULE_READY_URL" || echo "")
         if [[ "$STATUS_CODE" == "200" ]]; then
             animate_text "Capsule is ready."
             break
-        else
-            sleep 5
         fi
+
+        # detect if process died and capture reason
         if ! kill -0 "$CAPSULE_PID" 2>/dev/null; then
-            echo -e "\033[0;31mCapsule process exited (PID: $CAPSULE_PID)\033[0m"
-            if [[ -f "$CAPSULE_LOGS" ]]; then
-                tail -n 1 "$CAPSULE_LOGS"
+            wait "$CAPSULE_PID" 2>/dev/null
+            CAPSULE_EXIT_CODE=$?
+            animate_text "Capsule process exited (PID: $CAPSULE_PID) with code: $CAPSULE_EXIT_CODE"
+            echo "---- last lines of capsule log ----"
+            tail -n 80 "$CAPSULE_LOGS" 2>/dev/null || true
+            echo "---- dmesg (last 30 lines) ----"
+            dmesg | tail -n 30
+            # if illegal instruction detected, attempt to re-download different build
+            if dmesg | tail -n 30 | grep -qi "Illegal instruction\|invalid opcode"; then
+                animate_text "    ↳ Kernel reports Illegal instruction / invalid opcode. Binary may be incompatible with CPU."
+                animate_text "    ↳ Try re-downloading or use older capsule build."
             fi
-            exit 1
+            return 1
+        fi
+
+        sleep 2
+        SECONDS_WAITED=$((SECONDS_WAITED+2))
+        if [ "$SECONDS_WAITED" -ge "$TIMEOUT" ]; then
+            animate_text "    ✕ Timeout waiting for capsule ready endpoint."
+            echo "---- last lines of capsule log ----"
+            tail -n 80 "$CAPSULE_LOGS" 2>/dev/null || true
+            return 1
         fi
     done
 
@@ -624,6 +680,7 @@ startup() {
     echo
     "$PROTOCOL_EXEC" --account-private-key "$ACCOUNT_PRIVATE_KEY" &
     PROTOCOL_PID=$!
+    return 0
 }
 
 cleanup() {
